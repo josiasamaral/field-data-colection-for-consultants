@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <!-- © 2026 Labor Rural — Departamento de Inteligência.
-     Ferramenta de Gestão de Custos de Produção — versão 0.2.2.2.a
+     Ferramenta de Gestão de Custos de Produção — versão 0.3.0
      Novidades desta versão:
-       · edição direta dos lançamentos de Inventário (02), Custo (03) e Colheita (04),
-         com pergunta de alcance quando o lançamento faz parte de um rateio ou de uma série;
-       · tela de Sumário depois do login: cadastrar nova fazenda ou abrir uma das
-         fazendas atendidas pelo consultor.
+       · a fazenda passa a conter SAFRAS; cada safra tem os seus talhões, o seu
+         inventário e os seus parâmetros econômicos;
+       · abrir safra nova copia talhões e inventário da safra anterior;
+       · fechar safra trava os lançamentos no próprio banco de dados, e só o
+         administrador reabre, com registro;
+       · inventário ganha baixa (com depreciação proporcional aos meses) e
+         reavaliação opcional por safra;
+       · depreciação e idade passam a ser calculadas na data de fim da safra,
+         e não na data de hoje: safra fechada não muda mais de número.
      Material didático do treinamento de Gestão de Propriedades Cacaueiras — ExpoCacau 2026. -->
 <html lang="pt-BR">
 <head>
@@ -357,6 +362,24 @@ body.trancado #sumario{display:none!important}
 .dlg-bts{display:flex;flex-direction:column;gap:8px}
 .dlg-bts .btn{width:100%;justify-content:center}
 
+/* ===================== PAINEL DE SAFRAS ===================== */
+#pnSafras{position:fixed;inset:0;z-index:9400;display:flex;align-items:center;justify-content:center;padding:20px}
+#pnSafras[hidden]{display:none}
+#pnSafras .pn-fundo{position:absolute;inset:0;background:rgba(0,26,24,.5)}
+#pnSafras .pn-cx{position:relative;width:100%;max-width:560px;max-height:86vh;overflow:auto;
+  background:var(--panel);border-radius:var(--rad);box-shadow:0 18px 60px rgba(0,0,0,.3);padding:22px}
+#pnSafras h3{font-family:var(--font-d);font-size:18px;font-weight:600;color:var(--brand-deep);margin:0 0 3px}
+#pnSafras .pn-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.sfr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--line);
+  border-radius:var(--rad-s);padding:11px 13px;margin-bottom:8px;background:#fff}
+.sfr.viva{border-color:var(--brand-2);background:var(--panel2)}
+.sfr .sfr-i{flex:1 1 180px;min-width:0}
+.sfr .sfr-n{font-size:14px;font-weight:600;color:var(--brand-deep)}
+.sfr .sfr-d{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+.sfr .sfr-b{display:flex;gap:6px;flex-wrap:wrap}
+.trava{background:#fffbe9;border:1.5px solid #e7d9a8;border-radius:var(--rad-s);
+  padding:10px 14px;margin:12px 0;font-size:12.5px;color:var(--gold);font-weight:600}
+
 /* ===================== FAIXA DE EDICAO ===================== */
 .edbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 0;
   background:#fffbe9;border:1.5px solid #e7d9a8;border-radius:var(--rad-s);padding:10px 14px}
@@ -700,7 +723,10 @@ body.trancado #sumario{display:none!important}
   <span class="fx opc"><span class="fsep">|</span> <span id="fxPapel">Consultor</span></span>
   <span class="fx opc"><span class="fsep">|</span> <span id="fxRede">Online</span></span>
   <span class="fx fxp"><span class="fsep sep-d">|</span> <span id="fxPend">Tudo salvo</span></span>
+  <span class="fsep">|</span>
+  <span class="fx"><b id="fxSafra">&mdash;</b></span>
   <span class="fesp"></span>
+  <button class="fbtn" id="fxSafras" type="button">Safras</button>
   <button class="fbtn" id="fxFazendas" type="button">Fazendas</button>
   <button class="fbtn" id="fxSalvarArq" type="button">Salvar arquivo de trabalho</button>
   <button class="fbtn" id="fxTrancar" type="button">Trancar</button>
@@ -876,6 +902,15 @@ body.trancado #sumario{display:none!important}
       <div class="pfield"><div class="pl">Uso no cacau (%) <span class="opt">OPCIONAL</span></div>
         <input type="number" id="iUso" step="1" min="1" max="100" inputmode="decimal" placeholder="100">
         <div class="pb">Se o item é dividido com outra atividade, informe só a fatia do cacau.</div></div>
+      <div class="pfield"><label for="iReav">Valor de mercado hoje (opcional)</label>
+        <input type="number" id="iReav" step="0.01" min="0" inputmode="decimal" placeholder="deixe vazio para usar o valor de novo">
+        <div class="pb">Vale só nesta safra. O valor de novo original nunca é apagado.</div></div>
+      <div class="pfield"><label for="iBaixaData">Saiu da fazenda em (opcional)</label>
+        <input type="date" id="iBaixaData">
+        <div class="pb">Preencha quando o bem for vendido, perdido ou descartado nesta safra.</div></div>
+      <div class="pfield"><label for="iBaixaValor">Valor recebido na saída</label>
+        <input type="number" id="iBaixaValor" step="0.01" min="0" inputmode="decimal" placeholder="0,00">
+        <div class="pb">A depreciação do ano é calculada só até a data da saída.</div></div>
     </div>
     <div class="edbar" id="iEdicao" style="display:none">
       <b>Editando um item já cadastrado</b>
@@ -1565,7 +1600,7 @@ body.trancado #sumario{display:none!important}
   <b>Fonte:</b> Departamento de Inteligência da Labor Rural, 2026.
   <span>Material didático componente do treinamento de Gestão de Propriedades Cacaueiras da ExpoCacau 2026.</span>
   <span><b>Ferramenta em desenvolvimento.</b></span>
-  <span style="margin-left:auto"><b>Versão:</b> 0.2.2.2.a</span>
+  <span style="margin-left:auto"><b>Versão:</b> 0.3.0</span>
 </footer>
 </div>
 </div></div>
@@ -1597,11 +1632,28 @@ body.trancado #sumario{display:none!important}
       <div class="folha-info"><span>Perfil</span><b id="mnPapel">&mdash;</b></div>
       <div class="folha-info"><span>Internet</span><b id="mnRede">&mdash;</b></div>
       <div class="folha-info"><span>Situação</span><b id="mnPend">&mdash;</b></div>
+      <button class="btn ghost folha-acao" id="mnSafras" type="button">Safras da fazenda</button>
       <button class="btn ghost folha-acao" id="mnFazendas" type="button">Fazendas atendidas</button>
       <button class="btn ghost folha-acao" id="mnSalvarArq" type="button">Salvar arquivo de trabalho</button>
       <button class="btn ghost folha-acao" id="mnTrancar" type="button">Trancar</button>
       <button class="btn ghost folha-acao" id="mnSair" type="button">Sair</button>
     </div>
+  </div>
+</div>
+
+<div id="pnSafras" role="dialog" aria-modal="true" hidden>
+  <div class="pn-fundo" id="pnFundo"></div>
+  <div class="pn-cx">
+    <h3>Safras da fazenda</h3>
+    <div class="pn-sub" id="pnSub">&mdash;</div>
+    <div id="pnLista"></div>
+    <div class="act-row" style="margin-top:14px">
+      <button class="btn" id="pnNova" type="button">+ Abrir safra nova</button>
+      <button class="btn ghost" id="pnFechar" type="button">Voltar</button>
+    </div>
+    <div class="note" style="margin-top:12px"><b>Como a safra nova nasce</b>
+      Talhões e inventário são copiados da última safra, já sem os talhões erradicados
+      e sem os bens que receberam baixa. Custos e colheita começam vazios.</div>
   </div>
 </div>
 
@@ -2004,8 +2056,96 @@ function perguntar(titulo,texto,opcoes){
 const CHAVE="lr_custos_producao_v3";
 let temDisco=true;
 try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){temDisco=false;}
-const VAZIO=()=>({fazenda:{nome:"",produtor:"",consultor:"",cidade:"",uf:"BA",unid:"KG",terraNua:0,mdofMes:0,tma:6,plAlvo:0.5},
-  talhoes:[],inventario:[],custos:[],vendas:[],financeiro:{}});
+/* ==========================================================================
+   MODELO POR SAFRA (v0.3.0)
+
+   A fazenda guarda apenas a identidade (nome, produtor, município, UF,
+   unidade). Tudo o que muda de um ano para o outro mora dentro da safra:
+   os parâmetros econômicos, a lista de talhões e o inventário.
+
+   Custos e colheita continuam numa lista só, porque cada lançamento já
+   tem data e se classifica sozinho pela regra do estado.
+
+   Para não precisar reescrever os blocos 01 a 07, "dados.talhoes",
+   "dados.inventario" e "dados.fazenda.terraNua" continuam existindo:
+   viraram atalhos que apontam sempre para a SAFRA SELECIONADA.
+   ========================================================================== */
+const PARAM_SAFRA=["terraNua","mdofMes","tma","plAlvo"];
+const SAFRA_NOVA=rot=>({id:null,rotulo:rot||"",inicio:"",fim:"",situacao:"aberta",
+  terraNua:0,mdofMes:0,tma:6,plAlvo:0.5,talhoes:[],inventario:[]});
+
+/* devolve o objeto da safra selecionada, criando-a se ainda não existir */
+function SA(o){
+  o=o||dados;
+  if(!o.safras) o.safras={};
+  let r=safraSel;
+  if(!r || !o.safras[r]){
+    const uf=(o.__fazenda&&o.__fazenda.uf)||"BA";
+    r = Object.keys(o.safras).sort().reverse()[0] || safraAtual(uf);
+    if(!o.safras[r]) o.safras[r]=SAFRA_NOVA(r);
+    safraSel=r;
+  }
+  return o.safras[r];
+}
+const safraViva = () => SA();
+const safraFechada = () => SA().situacao==="fechada";
+
+function VAZIO(){
+  const o={ safras:{}, custos:[], vendas:[], financeiro:{} };
+  const f={nome:"",produtor:"",consultor:"",cidade:"",uf:"BA",unid:"KG"};
+  Object.defineProperty(o,"__fazenda",{value:f,enumerable:false,writable:true});
+  /* os parâmetros econômicos vivem na safra, mas continuam acessíveis
+     como dados.fazenda.terraNua para não quebrar os blocos existentes */
+  PARAM_SAFRA.forEach(k=>Object.defineProperty(f,k,{enumerable:false,configurable:true,
+    get:()=>SA(o)[k], set:v=>{SA(o)[k]=v;}}));
+  Object.defineProperty(o,"fazenda",{enumerable:true,configurable:true,
+    get:()=>f, set:v=>{Object.assign(f,v||{});}});
+  /* as listas do bloco 02 e do bloco 01 são sempre as da safra selecionada */
+  ["talhoes","inventario"].forEach(k=>Object.defineProperty(o,k,{enumerable:false,configurable:true,
+    get:()=>SA(o)[k], set:v=>{SA(o)[k]=v||[];}}));
+  return o;
+}
+
+/* aceita cópias de segurança da v0.2.x, que guardavam uma lista só */
+function normalizarDados(j){
+  const o=VAZIO();
+  if(!j||typeof j!=="object") return o;
+  const fz=j.fazenda||{};
+  Object.assign(o.__fazenda,{nome:fz.nome||"",produtor:fz.produtor||"",
+    consultor:fz.consultor||"",cidade:fz.cidade||"",uf:fz.uf||"BA",unid:fz.unid||"KG"});
+  o.custos=Array.isArray(j.custos)?j.custos:[];
+  o.vendas=Array.isArray(j.vendas)?j.vendas:[];
+  o.financeiro=j.financeiro||{};
+  if(j.safras && typeof j.safras==="object" && Object.keys(j.safras).length){
+    Object.keys(j.safras).forEach(r=>{
+      const s=Object.assign(SAFRA_NOVA(r),j.safras[r]||{});
+      s.talhoes=Array.isArray(s.talhoes)?s.talhoes:[];
+      s.inventario=Array.isArray(s.inventario)?s.inventario:[];
+      o.safras[r]=s;
+    });
+  }else{
+    /* formato antigo: tudo vira a safra mais recente encontrada */
+    const uf=o.__fazenda.uf;
+    const rots=new Set();
+    (o.custos||[]).forEach(c=>{const s=safraDe(c.data,uf); if(s) rots.add(s);});
+    (o.vendas||[]).forEach(v=>{const s=safraDe(v.data,uf); if(s) rots.add(s);});
+    if(!rots.size) rots.add(safraAtual(uf));
+    const lista=[...rots].sort();
+    const base=lista[lista.length-1];
+    lista.forEach(r=>{
+      const s=SAFRA_NOVA(r);
+      s.terraNua=num(fz.terraNua); s.mdofMes=num(fz.mdofMes);
+      s.tma=num(fz.tma)||6; s.plAlvo=num(fz.plAlvo)||0.5;
+      if(r===base){
+        s.talhoes=Array.isArray(j.talhoes)?j.talhoes:[];
+        s.inventario=Array.isArray(j.inventario)?j.inventario:[];
+      }
+      o.safras[r]=s;
+    });
+    safraSel=base;
+  }
+  return o;
+}
 let dados=VAZIO(), safraSel=null;
 function gravar(){ if(typeof marcarSujo==="function") marcarSujo();
   if(!temDisco)return;
@@ -2111,7 +2251,7 @@ async function abrirCofre(){
   const b=temDisco?localStorage.getItem(CHAVE_COFRE):null;
   if(!b){
     const velho=temDisco?localStorage.getItem(CHAVE):null;
-    if(velho){ try{ dados=Object.assign(VAZIO(),JSON.parse(velho)); }catch(e){} }
+    if(velho){ try{ dados=normalizarDados(JSON.parse(velho)); }catch(e){} }
     await novoCofre();
     try{ localStorage.removeItem(CHAVE); }catch(e){}
     return;
@@ -2123,7 +2263,7 @@ async function abrirCofre(){
   if(!dek) throw new Error("COFRE");
   chaveCofre=dek;
   chavesCofre = refazer ? await embrulhar(dek,kekViva,saltConta) : pac.chaves;
-  try{ dados=Object.assign(VAZIO(),JSON.parse(await decifrar(dek,pac.iv,pac.dados))); }
+  try{ dados=normalizarDados(JSON.parse(await decifrar(dek,pac.iv,pac.dados))); }
   catch(e){ throw new Error("COFRE"); }
   if(refazer) await gravarCofre();
 }
@@ -2250,7 +2390,7 @@ async function salvarArquivoTrabalho(){
     const f=dados.fazenda;
     const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
       meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.2.2.2.a",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.0",
         talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
       chaves,iv:c.iv,dados:c.dado};
     baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
@@ -2288,7 +2428,7 @@ async function abrirArquivoTrabalho(){
     const txt=await decifrar(dek,pac.iv,pac.dados);
     const d=JSON.parse(txt);
     if(!Array.isArray(d.custos)||!Array.isArray(d.vendas)) throw new Error("CONTEUDO");
-    dados=Object.assign(VAZIO(),d); safraSel=null; pacotePendente=null;
+    safraSel=null; dados=normalizarDados(d); pacotePendente=null;
     gravar(); carregarFazenda(); render(); notaImpSafra();
     $("arqRelato").innerHTML='<div class="note info"><b>Arquivo carregado</b>'+
       'Confira os números e depois vá ao bloco 09 para enviar à nuvem.</div>';
@@ -2309,7 +2449,7 @@ function escolherArquivoTrabalho(ev){
       const j=JSON.parse(e.target.result);
       if(j&&j.app==="LR_GESTAO_CUSTOS"&&j.chaves){ pedirSenhaArquivo(j); }
       else if(j&&Array.isArray(j.custos)&&Array.isArray(j.vendas)){
-        dados=Object.assign(VAZIO(),j); safraSel=null;
+        safraSel=null; dados=normalizarDados(j);
         gravar(); carregarFazenda(); render(); notaImpSafra();
         $("arqRelato").innerHTML='<div class="note info"><b>Cópia aberta carregada</b>Este arquivo não tinha senha.</div>';
         aviso("Dados da propriedade carregados.");
@@ -2332,6 +2472,9 @@ function atualizarFaixa(){
   if(sessao&&fazendaNuvem){ pend = salvando ? "Enviando…" : (sujo ? "Alterações não enviadas" : "Tudo enviado"); }
   else if(sessao&&!fazendaNuvem) pend="Nenhuma fazenda na nuvem";
   else pend="Guardado só neste computador";
+  const fs=$("fxSafra");
+  if(fs) fs.textContent=(dados.fazenda.nome||"Sem fazenda")+" · safra "+(safraSel||"—")+
+    (safraFechada()?" (FECHADA)":"");
   $("fxPend").textContent=pend;
   if(/não enviadas|só neste/.test(pend)) dot.classList.add("pend");
   /* espelha no menu do celular */
@@ -2351,35 +2494,69 @@ function preencherSelect(el,itens,vazio){
 }
 
 /* ============ derivados: talhões e inventário ============ */
-const anosDesde = iso => {
+const anosDesde = (iso,ate) => {
   if(!iso) return 0;
-  const d=new Date(iso+"T00:00:00"), h=new Date();
+  const d=new Date(iso+"T00:00:00"), h=ate?new Date(ate+"T00:00:00"):new Date();
   return Math.max(0,(h-d)/(365.25*24*3600*1000));
 };
-function derivados(){
-  const t=dados.talhoes, inv=dados.inventario;
-  const areaProd=t.filter(x=>x.estagio==="PRODUÇÃO").reduce((s,x)=>s+num(x.area),0);
-  const areaForm=t.filter(x=>x.estagio==="FORMAÇÃO").reduce((s,x)=>s+num(x.area),0);
-  const anoAtual=new Date().getFullYear();
+/* último dia da safra: é a data de referência de idade e depreciação.
+   Usar "hoje" faria uma safra fechada mudar de número com o passar do
+   tempo, que é justamente o que não pode acontecer. */
+function fimDaSafra(rot){
+  const r=rot||safraSel, s=dados.safras&&dados.safras[r];
+  if(s&&s.fim) return s.fim;
+  const dig=String(r||"").replace(/[^0-9]/g,"");
+  const uf=dados.fazenda.uf;
+  if(ufInfo(uf).cal==="civil") return (dig.slice(-4)||new Date().getFullYear())+"-12-31";
+  const a=dig.slice(4,8)||dig.slice(0,4);
+  return a+"-08-31";
+}
+const anoRefSafra = rot => +String(fimDaSafra(rot)).slice(0,4);
+
+/* fração do ano em que o bem ainda pertencia à fazenda: item vendido no
+   meio da safra deprecia proporcionalmente aos meses até a baixa */
+function fracaoNaSafra(x,rot){
+  const s=dados.safras&&dados.safras[rot||safraSel];
+  if(!s||!s.inicio||!s.fim||!x.baixaData) return x.baixaData?0:1;
+  const ini=new Date(s.inicio+"T00:00:00"), fim=new Date(s.fim+"T00:00:00");
+  const b=new Date(x.baixaData+"T00:00:00");
+  if(b<=ini) return 0;
+  if(b>=fim) return 1;
+  return (b-ini)/(fim-ini);
+}
+/* valor que entra no patrimônio: o reavaliado quando informado nesta
+   safra, senão o valor de novo histórico */
+const valorItem = x => (num(x.valorReav)>0 ? num(x.valorReav) : num(x.valor));
+
+function derivados(rot){
+  const r=rot||safraSel;
+  const s=(dados.safras&&dados.safras[r])||SA();
+  const t=s.talhoes||[], inv=s.inventario||[];
+  const fimIso=fimDaSafra(r), anoRef=anoRefSafra(r);
+  const vivos=t.filter(x=>!x.erradicado);
+  const areaProd=vivos.filter(x=>x.estagio==="PRODUÇÃO").reduce((a,x)=>a+num(x.area),0);
+  const areaForm=vivos.filter(x=>x.estagio==="FORMAÇÃO").reduce((a,x)=>a+num(x.area),0);
   let depLav=0, capLav=0;
-  t.forEach(x=>{
+  vivos.forEach(x=>{
     const cap=num(x.vf)*num(x.area);
     capLav+=cap;
-    const safras = x.ano ? anoAtual-num(x.ano) : 0;
-    if(x.estagio==="PRODUÇÃO" && safras>0 && safras<=VU_LAVOURA) depLav+=cap/VU_LAVOURA;
+    const idade = x.ano ? anoRef-num(x.ano) : 0;
+    if(x.estagio==="PRODUÇÃO" && idade>0 && idade<=VU_LAVOURA) depLav+=cap/VU_LAVOURA;
   });
   let depInv=0, capInv=0;
   inv.forEach(x=>{
+    const fr=fracaoNaSafra(x,r);
+    if(fr<=0) return;                       /* saiu antes desta safra */
     const uso=(num(x.uso)||100)/100, vu=VIDA_UTIL[x.cat]||10, q=num(x.qtd)||1;
-    const total=num(x.valor)*q;
-    capInv += total/2*uso;
-    if(anosDesde(x.data) < vu) depInv += total/vu*uso;
+    const total=valorItem(x)*q;
+    capInv += total/2*uso*fr;
+    if(anosDesde(x.data,fimIso) < vu) depInv += total/vu*uso*fr;
   });
   const capSemTerra=capLav+capInv;
-  const capTerra=num(dados.fazenda.terraNua)*(areaProd+areaForm);
+  const capTerra=num(s.terraNua)*(areaProd+areaForm);
   return {areaProd,areaForm,depLav,capLav,depInv,capInv,
     deprec:depLav+depInv, capSemTerra, capTerra, capComTerra:capSemTerra+capTerra,
-    mdof:num(dados.fazenda.mdofMes)*12, tma:num(dados.fazenda.tma)/100};
+    mdof:num(s.mdofMes)*12, tma:num(s.tma)/100};
 }
 
 /* ============ 01 fazenda ============ */
@@ -2445,7 +2622,7 @@ function addTalhao(){
   if(!nome){aviso("Dê um nome ao talhão.");$("tNome").focus();return;}
   if(area<=0){aviso("Informe a área do talhão.");$("tArea").focus();return;}
   if(dados.talhoes.some(t=>t.nome.toLowerCase()===nome.toLowerCase())){aviso("Já existe talhão com esse nome.");return;}
-  dados.talhoes.push({id:uid(),nome,area,estagio:$("tEstagio").value,
+  dados.talhoes.push({id:uid(),chave:uid(),nome,area,estagio:$("tEstagio").value,
     ano:num($("tAno").value)||null,vf:num($("tVF").value),
     dens:num($("tDens").value)||DENS_PADRAO, falha:num($("tFalha").value)||0,
     cruz:$("tCruz").value, material:$("tMaterial").value.trim(),
@@ -2546,7 +2723,8 @@ function pintarEdicaoInv(){
 }
 function sairEdicaoInv(limpar){
   edicaoInv=null;
-  if(limpar!==false){ ["iDesc","iValor","iQtd"].forEach(i=>$(i).value=""); $("iUso").value=""; }
+  if(limpar!==false){ ["iDesc","iValor","iQtd","iReav","iBaixaData","iBaixaValor"]
+    .forEach(i=>{const e=$(i); if(e) e.value="";}); $("iUso").value=""; }
   pintarEdicaoInv();
 }
 function editarItem(id){
@@ -2555,6 +2733,9 @@ function editarItem(id){
   $("iCat").value=x.cat; $("iDesc").value=x.desc||"";
   $("iQtd").value=x.qtd||1; $("iValor").value=x.valor||"";
   $("iData").value=x.data||hoje(); $("iUso").value=x.uso||100;
+  $("iReav").value=num(x.valorReav)>0?x.valorReav:"";
+  $("iBaixaData").value=x.baixaData||"";
+  $("iBaixaValor").value=num(x.baixaValor)>0?x.baixaValor:"";
   pintarEdicaoInv();
   const alvo=$("b2"); if(alvo&&alvo.scrollIntoView) alvo.scrollIntoView({behavior:"smooth",block:"start"});
   $("iDesc").focus();
@@ -2566,7 +2747,10 @@ function addItem(){
   if(!desc){aviso("Descreva o item.");$("iDesc").focus();return;}
   if(valor<=0){aviso("Informe o valor de novo.");$("iValor").focus();return;}
   if(!data){aviso("Informe a data de compra.");$("iData").focus();return;}
-  const campos={cat:$("iCat").value,desc,valor,qtd:qt,data,uso:num($("iUso").value)||100};
+  const campos={cat:$("iCat").value,desc,valor,qtd:qt,data,uso:num($("iUso").value)||100,
+    valorReav:num($("iReav").value),
+    baixaData:$("iBaixaData").value||"",
+    baixaValor:$("iBaixaData").value?num($("iBaixaValor").value):0};
   if(edicaoInv){
     const x=dados.inventario.find(i=>i.id===edicaoInv);
     if(!x){ sairEdicaoInv(); aviso("O item não existe mais."); return; }
@@ -2575,8 +2759,9 @@ function addItem(){
     gravar(); carregarFazenda(); render(); aviso("Item atualizado.");
     return;
   }
-  dados.inventario.push(Object.assign({id:uid()},campos));
-  gravar(); ["iDesc","iValor","iQtd"].forEach(i=>$(i).value="");
+  dados.inventario.push(Object.assign({id:uid(),chave:uid()},campos));
+  gravar(); ["iDesc","iValor","iQtd","iReav","iBaixaData","iBaixaValor"]
+    .forEach(i=>{const e=$(i); if(e) e.value="";});
   carregarFazenda(); render(); aviso("Item adicionado ao inventário.");
 }
 function apagarItem(id){
@@ -3278,13 +3463,14 @@ function listarVendas(){
 /* ============ cálculo ============ */
 function safrasDisponiveis(){
   const uf=dados.fazenda.uf, s=new Set();
+  Object.keys(dados.safras||{}).forEach(r=>s.add(r));
   dados.custos.forEach(c=>s.add(safraReg(c)));
   dados.vendas.forEach(v=>s.add(safraReg(v)));
-  s.add(safraAtual(uf));
+  if(!s.size) s.add(safraAtual(uf));
   return [...s].filter(Boolean).sort().reverse();
 }
 function calcular(safra){
-  const uf=dados.fazenda.uf, d=derivados();
+  const uf=dados.fazenda.uf, d=derivados(safra);
   const cs=dados.custos.filter(c=>!safra||safraReg(c)===safra);
   const vs=dados.vendas.filter(v=>!safra||safraReg(v)===safra);
   const coe=cs.reduce((s,c)=>s+c.total,0);
@@ -3353,10 +3539,10 @@ function kpi(cls,valor,unidade,rotulo,nota){
 const ou=(c,t)=>c?t:"—";
 function chipsSafra(){
   const lista=safrasDisponiveis();
-  if(!safraSel||!lista.includes(safraSel)){
-    const comDados=lista.filter(s=>{const x=calcular(s);return x.coe>0||x.rb>0;});
-    safraSel=comDados[0]||lista[0];
-  }
+  if(!safraSel||!lista.includes(safraSel)) safraSel=lista[0];
+  /* toda safra listada precisa existir como objeto, senão os atalhos
+     dados.talhoes e dados.inventario ficariam sem para onde apontar */
+  lista.forEach(r=>{ if(!dados.safras[r]) dados.safras[r]=SAFRA_NOVA(r); });
   const html=lista.map(s=>'<button class="gchip'+(s===safraSel?" sel":"")+'" data-safra="'+s+'" type="button">'+s+'</button>').join("");
   ["safraChips3","safraChips4","safraChips5","safraChips6"].forEach(id=>{
     $(id).innerHTML=html;
@@ -4474,7 +4660,7 @@ function ligarMobile(){
   if(at) at.onclick=()=>abrirFolha("flSecoes");
 
   const fm=$("fxMenu"); if(fm) fm.onclick=()=>abrirFolha("flConta");
-  const rep={mnFazendas:"fxFazendas", mnSalvarArq:"fxSalvarArq",
+  const rep={mnSafras:"fxSafras", mnFazendas:"fxFazendas", mnSalvarArq:"fxSalvarArq",
              mnTrancar:"fxTrancar", mnSair:"fxSair"};
   Object.keys(rep).forEach(k=>{
     const b=$(k); if(b) b.onclick=()=>{ fecharFolhas(); $(rep[k]).click(); };
@@ -4758,6 +4944,8 @@ function render(){
   produtividadeAcumulada(); pizzaRenda(); montarMeses(); evolucao();
   previaVenda(); previaCusto(); pintarDerivados(); finRender();
   pintarEdicaoInv(); pintarEdicaoCusto(); pintarEdicaoVenda();
+  if(typeof pintarTravaSafra==="function") pintarTravaSafra();
+  if(typeof atualizarFaixa==="function") atualizarFaixa();
 }
 
 montarUF();
@@ -4933,21 +5121,28 @@ async function api(caminho,opt,repetiu){
 
 /* ---------------------------------------------------------------- tradução */
 const nn = v => { const n=Number(v); return isFinite(n)?n:0; };
-const TABELAS=[
+/* ---- listas que moram DENTRO da safra ---- */
+const TAB_SAFRA=[
   {chave:"talhoes", tab:"talhoes",
-   pra:t=>({nome:t.nome,area:nn(t.area),estagio:t.estagio,ano:t.ano||null,vf:nn(t.vf),
-     dens:nn(t.dens)||1111,falha:nn(t.falha),cruz:t.cruz||null,material:t.material||null,
+   pra:t=>({chave:t.chave||t.id,nome:t.nome,area:nn(t.area),estagio:t.estagio,ano:t.ano||null,
+     vf:nn(t.vf),dens:nn(t.dens)||1111,falha:nn(t.falha),cruz:t.cruz||null,material:t.material||null,
      sistema:t.sistema||null,consorcio:t.consorcio||null,irrig:t.irrig||null,
-     tipo_irrig:t.tipoIrrig||null,pct_irrig:nn(t.pctIrrig)}),
-   de:r=>({id:uid(),nome:r.nome,area:nn(r.area),estagio:r.estagio,ano:r.ano,vf:nn(r.vf),
-     dens:nn(r.dens)||1111,falha:nn(r.falha),cruz:r.cruz||"",material:r.material||"",
+     tipo_irrig:t.tipoIrrig||null,pct_irrig:nn(t.pctIrrig),erradicado:!!t.erradicado}),
+   de:r=>({id:uid(),chave:r.chave||uid(),nome:r.nome,area:nn(r.area),estagio:r.estagio,ano:r.ano,
+     vf:nn(r.vf),dens:nn(r.dens)||1111,falha:nn(r.falha),cruz:r.cruz||"",material:r.material||"",
      sistema:r.sistema||"",consorcio:r.consorcio||"",irrig:r.irrig||"NÃO IRRIGADO",
-     tipoIrrig:r.tipo_irrig||"",pctIrrig:nn(r.pct_irrig)})},
+     tipoIrrig:r.tipo_irrig||"",pctIrrig:nn(r.pct_irrig),erradicado:!!r.erradicado})},
   {chave:"inventario", tab:"inventario",
-   pra:x=>({cat:x.cat,descricao:x.desc||null,valor:nn(x.valor),qtd:nn(x.qtd)||1,
-     data:x.data||null,uso:nn(x.uso)||100}),
-   de:r=>({id:uid(),cat:r.cat,desc:r.descricao||"",valor:nn(r.valor),qtd:nn(r.qtd)||1,
-     data:r.data||"",uso:nn(r.uso)||100})},
+   pra:x=>({chave:x.chave||x.id,cat:x.cat,descricao:x.desc||null,valor:nn(x.valor),
+     qtd:nn(x.qtd)||1,data:x.data||null,uso:nn(x.uso)||100,
+     valor_reavaliado:nn(x.valorReav)>0?nn(x.valorReav):null,
+     baixa_data:x.baixaData||null,baixa_valor:x.baixaData?nn(x.baixaValor):null}),
+   de:r=>({id:uid(),chave:r.chave||uid(),cat:r.cat,desc:r.descricao||"",valor:nn(r.valor),
+     qtd:nn(r.qtd)||1,data:r.data||"",uso:nn(r.uso)||100,
+     valorReav:nn(r.valor_reavaliado),baixaData:r.baixa_data||"",baixaValor:nn(r.baixa_valor)})}
+];
+/* ---- listas com data própria: classificadas pelo rótulo da safra ---- */
+const TAB_DATA=[
   {chave:"custos", tab:"custos",
    pra:c=>({data:c.data||null,talhao:c.talhao||null,atividade:c.atividade,elemento:c.elemento,
      qtd:nn(c.qtd),unidade:c.unidade||null,vu:nn(c.vu),total:nn(c.total),
@@ -4967,12 +5162,23 @@ const COL_FIN={cartao:"cartao",giro:"giro",contasPagar:"contas_pagar",barter:"ba
   bancaria:"bancaria",concess:"concess",terras:"terras",outras:"outras",banco:"banco",
   receber:"receber",insumos:"insumos",lavoura:"lavoura",jurosExtra:"juros_extra",amort:"amort"};
 
+/* a fazenda guarda só a identidade; o resto foi para a safra */
 function fazendaPra(){
   const f=dados.fazenda;
   return {nome:f.nome||"Sem nome",produtor:f.produtor||null,consultor:f.consultor||null,
-    cidade:f.cidade||null,uf:f.uf||"BA",unid:f.unid||"KG",terra_nua:nn(f.terraNua),
-    mdof_mes:nn(f.mdofMes),tma:nn(f.tma)||6,pl_alvo:nn(f.plAlvo)||0.5,
+    cidade:f.cidade||null,uf:f.uf||"BA",unid:f.unid||"KG",
     atualizado_em:new Date().toISOString()};
+}
+function safraPra(rot){
+  const s=dados.safras[rot]||SAFRA_NOVA(rot);
+  return {rotulo:rot,inicio:s.inicio||inicioDaSafra(rot),fim:s.fim||fimDaSafra(rot),
+    terra_nua:nn(s.terraNua),mdof_mes:nn(s.mdofMes),
+    tma:nn(s.tma)||6,pl_alvo:nn(s.plAlvo)||0.5};
+}
+function inicioDaSafra(rot){
+  const dig=String(rot||"").replace(/[^0-9]/g,""), uf=dados.fazenda.uf;
+  if(ufInfo(uf).cal==="civil") return (dig.slice(-4)||new Date().getFullYear())+"-01-01";
+  return (dig.slice(0,4)||new Date().getFullYear())+"-09-01";
 }
 
 /* ---------------------------------------------------------------- estado */
@@ -5080,17 +5286,21 @@ async function listarNuvem(){
   }catch(e){ erroNuvem("nvErro2",e.message); }
 }
 
-/* cria a fazenda ja carimbando o dono (criado_por). Se a coluna ainda nao
-   existir no banco, repete a criacao sem ela: a ferramenta nao trava. */
+/* ==========================================================================
+   NUVEM POR SAFRA (v0.3.0)
+   A fazenda é a pasta; a safra é o caderno dentro dela. Cada gravação
+   sobe apenas as safras ABERTAS: safra fechada é recusada pelo banco.
+   ========================================================================== */
+
 async function criarFazendaNaNuvem(){
   const corpo=fazendaPra();
-  if(sessao&&sessao.user) corpo.criado_por=sessao.user.id;
+  if(sessao&&sessao.user) corpo.dono=sessao.user.id;
   try{
     return await api("fazendas",{method:"POST",body:[corpo],
       headers:{Prefer:"return=representation"}});
   }catch(e){
-    if(/criado_por/i.test(String(e&&e.message||e))){
-      delete corpo.criado_por;
+    if(/\bdono\b/i.test(String(e&&e.message||e))){
+      delete corpo.dono;
       return await api("fazendas",{method:"POST",body:[corpo],
         headers:{Prefer:"return=representation"}});
     }
@@ -5112,31 +5322,81 @@ async function novaFazendaNuvem(){
   }catch(e){ salvando=false; pintarNuvem(); erroNuvem("nvErro2",e.message); }
 }
 
+/* garante que cada safra local tenha uma linha correspondente na nuvem */
+async function garantirSafras(fazId){
+  const remotas=await api("safras?select=*&fazenda_id=eq."+fazId);
+  const porRot={}; (remotas||[]).forEach(s=>porRot[s.rotulo]=s);
+  const criar=[];
+  Object.keys(dados.safras).forEach(rot=>{
+    const s=dados.safras[rot];
+    if(porRot[rot]){ s.id=porRot[rot].id; s.situacao=porRot[rot].situacao;
+                     s.inicio=porRot[rot].inicio; s.fim=porRot[rot].fim; }
+    else criar.push(Object.assign({fazenda_id:fazId},safraPra(rot)));
+  });
+  if(criar.length){
+    const novas=await api("safras",{method:"POST",body:criar,
+      headers:{Prefer:"return=representation"}});
+    (novas||[]).forEach(s=>{
+      const d=dados.safras[s.rotulo];
+      if(d){ d.id=s.id; d.situacao=s.situacao; d.inicio=s.inicio; d.fim=s.fim; }
+    });
+  }
+  return dados.safras;
+}
+
 async function salvarNuvem(silencioso){
   if(!sessao||!fazendaNuvem||salvando) return;
   if(!navigator.onLine){ pintarNuvem(); return; }
   erroNuvem("nvErro2",""); salvando=true; pintarNuvem();
-  const id=fazendaNuvem.id;
+  const fid=fazendaNuvem.id;
   try{
-    await api("fazendas?id=eq."+id,{method:"PATCH",body:fazendaPra()});
-    for(const t of TABELAS){
-      await api(t.tab+"?fazenda_id=eq."+id,{method:"DELETE"});
-      const linhas=(dados[t.chave]||[]).map(x=>Object.assign({fazenda_id:id},t.pra(x)));
-      for(let i=0;i<linhas.length;i+=400)
-        await api(t.tab,{method:"POST",body:linhas.slice(i,i+400)});
-    }
-    await api("financeiro?fazenda_id=eq."+id,{method:"DELETE"});
-    /* só sobem as safras que têm algum valor: evita linha vazia por safra visitada */
-    const fin=Object.entries(dados.financeiro||{})
-      .filter(([,v])=>CAMPOS_FIN.some(k=>nn(v[k])>0))
-      .map(([safra,v])=>{
-        const l={fazenda_id:id,safra};
-        CAMPOS_FIN.forEach(k=>l[COL_FIN[k]]=nn(v[k]));
-        return l;
+    await api("fazendas?id=eq."+fid,{method:"PATCH",body:fazendaPra()});
+    await garantirSafras(fid);
+
+    /* lançamentos com data se distribuem pelo rótulo da safra */
+    const porSafra={};
+    Object.keys(dados.safras).forEach(r=>porSafra[r]={custos:[],vendas:[]});
+    TAB_DATA.forEach(t=>{
+      (dados[t.chave]||[]).forEach(x=>{
+        const r=safraReg(x);
+        if(!porSafra[r]) porSafra[r]={custos:[],vendas:[]};
+        porSafra[r][t.chave].push(x);
       });
-    if(fin.length) await api("financeiro",{method:"POST",body:fin});
+    });
+
+    let travadas=0;
+    for(const rot of Object.keys(dados.safras)){
+      const s=dados.safras[rot];
+      if(!s.id) continue;
+      if(s.situacao==="fechada"){ travadas++; continue; }   /* o banco recusaria */
+      await api("safras?id=eq."+s.id,{method:"PATCH",body:safraPra(rot)});
+
+      for(const t of TAB_SAFRA){
+        await api(t.tab+"?safra_id=eq."+s.id,{method:"DELETE"});
+        const linhas=(s[t.chave]||[]).map(x=>Object.assign({safra_id:s.id},t.pra(x)));
+        for(let i=0;i<linhas.length;i+=400)
+          await api(t.tab,{method:"POST",body:linhas.slice(i,i+400)});
+      }
+      for(const t of TAB_DATA){
+        await api(t.tab+"?safra_id=eq."+s.id,{method:"DELETE"});
+        const linhas=((porSafra[rot]||{})[t.chave]||[]).map(x=>Object.assign({safra_id:s.id},t.pra(x)));
+        for(let i=0;i<linhas.length;i+=400)
+          await api(t.tab,{method:"POST",body:linhas.slice(i,i+400)});
+      }
+      await api("financeiro?safra_id=eq."+s.id,{method:"DELETE"});
+      const v=(dados.financeiro||{})[rot];
+      if(v && CAMPOS_FIN.some(k=>nn(v[k])>0)){
+        const l={safra_id:s.id};
+        CAMPOS_FIN.forEach(k=>l[COL_FIN[k]]=nn(v[k]));
+        await api("financeiro",{method:"POST",body:[l]});
+      }
+    }
     sujo=false; salvando=false; pintarNuvem();
-    if(!silencioso){ aviso("Fazenda salva na nuvem."); listarNuvem(); }
+    if(!silencioso){
+      aviso(travadas ? ("Salvo. "+travadas+" safra(s) fechada(s) não foram alteradas.")
+                     : "Fazenda salva na nuvem.");
+      listarNuvem();
+    }
   }catch(e){
     salvando=false; pintarNuvem();
     erroNuvem("nvErro2",e.message);
@@ -5144,36 +5404,123 @@ async function salvarNuvem(silencioso){
   }
 }
 
-async function abrirNuvem(id){
+async function abrirNuvem(id,rotuloAlvo){
   if(sujo && !confirm("Há alterações não enviadas neste navegador. Abrir outra fazenda vai substituí-las. Continuar?")) return;
   erroNuvem("nvErro2","");
   try{
     const f=(await api("fazendas?select=*&id=eq."+id))[0];
     if(!f) throw new Error("Fazenda não encontrada.");
     const novo=VAZIO();
-    novo.fazenda={nome:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-      cidade:f.cidade||"",uf:f.uf||"BA",unid:f.unid||"KG",terraNua:nn(f.terra_nua),
-      mdofMes:nn(f.mdof_mes),tma:nn(f.tma)||6,plAlvo:nn(f.pl_alvo)||0.5};
-    for(const t of TABELAS){
-      const rs=await api(t.tab+"?select=*&fazenda_id=eq."+id);
-      novo[t.chave]=(rs||[]).map(t.de);
+    Object.assign(novo.__fazenda,{nome:f.nome||"",produtor:f.produtor||"",
+      consultor:f.consultor||"",cidade:f.cidade||"",uf:f.uf||"BA",unid:f.unid||"KG"});
+
+    const ss=await api("safras?select=*&fazenda_id=eq."+id+"&order=inicio.asc");
+    if(!ss || !ss.length){
+      const rot=safraAtual(novo.__fazenda.uf);
+      novo.safras[rot]=SAFRA_NOVA(rot);
+      safraSel=rot;
+    }else{
+      const ids=ss.map(s=>s.id).join(",");
+      const dentro={};
+      for(const t of TAB_SAFRA.concat(TAB_DATA)){
+        const rs=await api(t.tab+"?select=*&safra_id=in.("+ids+")");
+        dentro[t.chave]=rs||[];
+      }
+      const fin=await api("financeiro?select=*&safra_id=in.("+ids+")");
+      ss.forEach(s=>{
+        const o=SAFRA_NOVA(s.rotulo);
+        o.id=s.id; o.inicio=s.inicio; o.fim=s.fim; o.situacao=s.situacao;
+        o.terraNua=nn(s.terra_nua); o.mdofMes=nn(s.mdof_mes);
+        o.tma=nn(s.tma)||6; o.plAlvo=nn(s.pl_alvo)||0.5;
+        TAB_SAFRA.forEach(t=>{
+          o[t.chave]=dentro[t.chave].filter(r=>r.safra_id===s.id).map(t.de);
+        });
+        novo.safras[s.rotulo]=o;
+        TAB_DATA.forEach(t=>{
+          dentro[t.chave].filter(r=>r.safra_id===s.id).forEach(r=>novo[t.chave].push(t.de(r)));
+        });
+        const fr=(fin||[]).find(x=>x.safra_id===s.id);
+        if(fr){ const oo={}; CAMPOS_FIN.forEach(k=>oo[k]=nn(fr[COL_FIN[k]]));
+                novo.financeiro[s.rotulo]=oo; }
+      });
+      const rots=ss.map(s=>s.rotulo);
+      safraSel = (rotuloAlvo && rots.indexOf(rotuloAlvo)>=0) ? rotuloAlvo : rots[rots.length-1];
     }
-    const fin=await api("financeiro?select=*&fazenda_id=eq."+id);
-    (fin||[]).forEach(r=>{
-      const o={}; CAMPOS_FIN.forEach(k=>o[k]=nn(r[COL_FIN[k]]));
-      novo.financeiro[r.safra]=o;
-    });
-    dados=novo; safraSel=null;
+    dados=novo;
     fazendaNuvem={id:f.id,nome:f.nome};
     localStorage.setItem(CHAVE_FAZ,JSON.stringify(fazendaNuvem));
     sujo=false; gravar(); carregarFazenda(); render(); listarNuvem();
     sairEdicaoInv(); sairEdicaoCusto(); sairEdicaoVenda();
-    /* fazenda antiga, sem dono gravado: quem abre assume como consultor */
-    if(sessao && sessao.user && !f.criado_por){
-      api("fazendas?id=eq."+id,{method:"PATCH",body:{criado_por:sessao.user.id}}).catch(()=>{});
-    }
-    aviso("Fazenda "+f.nome+" carregada da nuvem.");
+    aviso("Fazenda "+f.nome+" · safra "+safraSel+" carregada.");
   }catch(e){ erroNuvem("nvErro2",e.message); }
+}
+
+/* ---------------------------------------------------------------- safras */
+/* abrir safra nova copiando talhões e inventário da safra anterior.
+   A "chave" permanente vai junto: é ela que faz a ferramenta reconhecer
+   que o talhão de 2027 é o mesmo talhão de 2026.                       */
+function copiarParaSafraNova(rotNovo,rotBase){
+  const base=dados.safras[rotBase];
+  const s=SAFRA_NOVA(rotNovo);
+  s.inicio=inicioDaSafra(rotNovo); s.fim=fimDaSafra(rotNovo);
+  if(base){
+    s.terraNua=base.terraNua; s.mdofMes=base.mdofMes;
+    s.tma=base.tma; s.plAlvo=base.plAlvo;
+    s.talhoes=(base.talhoes||[]).filter(t=>!t.erradicado)
+      .map(t=>Object.assign({},t,{id:uid(),chave:t.chave||t.id,erradicado:false}));
+    s.inventario=(base.inventario||[]).filter(x=>!x.baixaData)
+      .map(x=>Object.assign({},x,{id:uid(),chave:x.chave||x.id,
+        valorReav:0,baixaData:"",baixaValor:0}));
+  }
+  dados.safras[rotNovo]=s;
+  return s;
+}
+
+async function novaSafra(rotulo){
+  const rots=Object.keys(dados.safras).sort();
+  const base=rots[rots.length-1];
+  if(dados.safras[rotulo]){ aviso("Esta safra já existe."); return false; }
+  copiarParaSafraNova(rotulo,base);
+  safraSel=rotulo;
+  gravar(); carregarFazenda(); render();
+  if(sessao && fazendaNuvem){ await salvarNuvem(true); }
+  aviso("Safra "+rotulo+" aberta"+(base?" com os dados de "+base+" copiados.":"."));
+  return true;
+}
+
+async function fecharSafra(rot){
+  const s=dados.safras[rot]; if(!s) return;
+  if(!s.id){ aviso("Envie a fazenda para a nuvem antes de fechar a safra."); return; }
+  const r=await perguntar("Fechar a safra "+rot+"?",
+    "Depois de fechada, nenhum lançamento desta safra pode ser alterado. "+
+    "<b>Só o administrador consegue reabrir</b>, e a reabertura fica registrada.",
+    [{k:"sim",rot:"Fechar a safra "+rot},{k:"",rot:"Cancelar",tipo:"ghost"}]);
+  if(!r) return;
+  try{
+    await salvarNuvem(true);
+    await api("retratos",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},
+      body:[{safra_id:s.id,versao_app:"0.3.0",gerado_por:sessao?sessao.user.id:null,
+             conteudo:JSON.parse(JSON.stringify(calcular(rot)))}]}).catch(()=>{});
+    await api("safras?id=eq."+s.id,{method:"PATCH",body:{situacao:"fechada"}});
+    s.situacao="fechada";
+    gravar(); render(); pintarNuvem();
+    aviso("Safra "+rot+" fechada.");
+  }catch(e){ erroNuvem("nvErro2",e.message); aviso("Não deu para fechar: "+e.message); }
+}
+
+async function reabrirSafra(rot){
+  const s=dados.safras[rot]; if(!s||!s.id) return;
+  if(papelViva!=="admin"){ aviso("Só o administrador pode reabrir uma safra fechada."); return; }
+  const r=await perguntar("Reabrir a safra "+rot+"?",
+    "A reabertura fica registrada com o seu nome e a data. Os indicadores já entregues ao produtor podem mudar.",
+    [{k:"sim",rot:"Reabrir mesmo assim"},{k:"",rot:"Cancelar",tipo:"ghost"}]);
+  if(!r) return;
+  try{
+    await api("safras?id=eq."+s.id,{method:"PATCH",body:{situacao:"aberta"}});
+    s.situacao="aberta";
+    gravar(); render(); pintarNuvem();
+    aviso("Safra "+rot+" reaberta.");
+  }catch(e){ aviso("Não deu para reabrir: "+e.message); }
 }
 
 async function apagarNuvem(id){
@@ -5222,16 +5569,11 @@ function pintarSumario(){
     : "Nenhuma fazenda aberta neste aparelho.";
 }
 
-/* quem ve o que: o RLS do banco ja filtra, isto e so a segunda peneira */
-function fazendaDoConsultor(f){
-  if(papelViva==="admin") return true;
-  if(sessao && sessao.user && f.criado_por && f.criado_por===sessao.user.id) return true;
-  if(!f.criado_por) return true;          /* legado: fazenda sem dono gravado */
-  const meu=[String(nomeViva||"").trim().toLowerCase(),
-             String(contaViva||"").trim().toLowerCase()].filter(Boolean);
-  const c=String(f.consultor||"").trim().toLowerCase();
-  return !!c && meu.indexOf(c)>=0;
-}
+/* Quem ve o que e decidido pelo BANCO, nao aqui.
+   As policies fazendas_ver / fazendas_alterar / fazendas_apagar filtram por
+   (dono = auth.uid()) OR eh_admin(). Repetir esse filtro no navegador so
+   criaria risco de esconder fazenda legitima, entao a lista mostra
+   exatamente o que o Supabase devolveu.                                    */
 
 async function listarSumario(){
   const box=$("smLista"), er=$("smErro");
@@ -5247,7 +5589,7 @@ async function listarSumario(){
   box.innerHTML='<div class="empty">Buscando as fazendas…</div>';
   try{
     const fs=await api("fazendas?select=*&order=atualizado_em.desc");
-    const meus=(fs||[]).filter(fazendaDoConsultor);
+    const meus=fs||[];
     $("smQtd").textContent="— "+meus.length+" fazenda(s)";
     if(!meus.length){
       box.innerHTML='<div class="empty"><b>Nenhuma fazenda ainda</b>'+
@@ -5264,7 +5606,9 @@ async function listarSumario(){
         '<div class="sf-d">'+esc(f.produtor||"sem produtor")+' · '+esc(f.uf||"—")+' · '+
           (r.talhoes||0)+' talhão(ões) · '+((r.custos||0)+(r.vendas||0))+' lançamento(s)<br>'+
           'Atualizada em '+(f.atualizado_em?new Date(f.atualizado_em).toLocaleString("pt-BR"):"—")+
-          ' · Consultor: '+esc(f.consultor||"—")+'</div></div>'+
+          ' · Consultor: '+esc(f.consultor||"—")+
+          ((papelViva==="admin"&&sessao&&sessao.user&&f.dono&&f.dono!==sessao.user.id)
+            ? ' <span class="sem neu">DE OUTRO CONSULTOR</span>' : '')+'</div></div>'+
         '<div class="sf-b"><button class="btn" data-sm-abrir="'+f.id+'" type="button">'+
           (aberta?"Continuar":"Abrir")+'</button></div></div>';
     }).join("");
@@ -5304,7 +5648,89 @@ async function novaFazendaDoSumario(){
   aviso("Fazenda nova. Preencha o bloco 01 e salve.");
 }
 
+/* ==========================================================================
+   PAINEL DE SAFRAS
+   ========================================================================== */
+function abrirPainelSafras(){
+  pintarPainelSafras();
+  $("pnSafras").hidden=false; document.body.style.overflow="hidden";
+}
+function fecharPainelSafras(){
+  $("pnSafras").hidden=true; document.body.style.overflow="";
+}
+function pintarPainelSafras(){
+  $("pnSub").textContent=(dados.fazenda.nome||"Fazenda sem nome")+
+    " · "+Object.keys(dados.safras).length+" safra(s) · "+
+    (fazendaNuvem?"na nuvem":"só neste aparelho");
+  const rots=Object.keys(dados.safras).sort().reverse();
+  $("pnLista").innerHTML=rots.map(r=>{
+    const s=dados.safras[r], viva=r===safraSel, fech=s.situacao==="fechada";
+    const x=calcular(r);
+    const nc=dados.custos.filter(c=>safraReg(c)===r).length;
+    const nv=dados.vendas.filter(v=>safraReg(v)===r).length;
+    let bts='<button class="btn ghost" data-sf-abrir="'+r+'" type="button">'+
+      (viva?"Em uso":"Trabalhar nesta")+'</button>';
+    if(!fech) bts+='<button class="btn ghost" data-sf-fechar="'+r+'" type="button">Fechar</button>';
+    else if(papelViva==="admin") bts+='<button class="btn ghost" data-sf-reabrir="'+r+'" type="button">Reabrir</button>';
+    return '<div class="sfr'+(viva?" viva":"")+'">'+
+      '<div class="sfr-i"><div class="sfr-n">'+esc(r)+' '+
+        (fech?'<span class="sem neu">FECHADA</span>':'<span class="sem ok">ABERTA</span>')+'</div>'+
+      '<div class="sfr-d">'+(s.talhoes||[]).filter(t=>!t.erradicado).length+' talhão(ões) · '+
+        (s.inventario||[]).filter(i=>!i.baixaData).length+' item(ns) · '+
+        nc+' custo(s) · '+nv+' colheita(s)<br>COE '+brl0(x.coe)+' · Receita '+brl0(x.rb)+'</div></div>'+
+      '<div class="sfr-b">'+bts+'</div></div>';
+  }).join("");
+  $("pnLista").querySelectorAll("[data-sf-abrir]").forEach(b=>b.onclick=()=>{
+    safraSel=b.getAttribute("data-sf-abrir");
+    sairEdicaoInv(); sairEdicaoCusto(); sairEdicaoVenda();
+    carregarFazenda(); render(); fecharPainelSafras();
+    aviso("Trabalhando na safra "+safraSel+".");
+  });
+  $("pnLista").querySelectorAll("[data-sf-fechar]").forEach(b=>b.onclick=async()=>{
+    await fecharSafra(b.getAttribute("data-sf-fechar")); pintarPainelSafras();
+  });
+  $("pnLista").querySelectorAll("[data-sf-reabrir]").forEach(b=>b.onclick=async()=>{
+    await reabrirSafra(b.getAttribute("data-sf-reabrir")); pintarPainelSafras();
+  });
+}
+async function perguntarNovaSafra(){
+  const uf=dados.fazenda.uf, rots=Object.keys(dados.safras).sort();
+  const base=rots[rots.length-1]||safraAtual(uf);
+  const dig=String(base).replace(/[^0-9]/g,"");
+  const prox = ufInfo(uf).cal==="civil"
+    ? String(+dig.slice(-4)+1)
+    : (+dig.slice(0,4)+1)+"/"+(+dig.slice(0,4)+2);
+  const r=await perguntar("Abrir a safra "+prox+"?",
+    "Talhões e inventário de <b>"+esc(base)+"</b> serão copiados para a safra nova. "+
+    "Custos e colheita começam vazios. Nada em "+esc(base)+" é alterado.",
+    [{k:"sim",rot:"Abrir a safra "+prox},{k:"",rot:"Cancelar",tipo:"ghost"}]);
+  if(!r) return;
+  if(await novaSafra(prox)) pintarPainelSafras();
+}
+
+/* safra fechada: a tela também trava, além do banco */
+function pintarTravaSafra(){
+  const fech=safraFechada();
+  ["btnAddItem","btnSalvarCusto","btnSalvarVenda","btnAddTalhao","btnSalvarFaz"]
+    .forEach(id=>{ const b=$(id); if(b) b.disabled=fech; });
+  document.querySelectorAll("#avisoTrava").forEach(e=>e.remove());
+  if(fech){
+    ["b1","b2","b3","b4"].forEach(bid=>{
+      const sec=$(bid); if(!sec) return;
+      const d=document.createElement("div");
+      d.id="avisoTrava"; d.className="trava";
+      d.textContent="Safra "+safraSel+" está FECHADA. Os lançamentos não podem ser alterados."+
+        (papelViva==="admin"?" Você pode reabrir pelo botão Safras.":" Peça ao administrador para reabrir.");
+      sec.insertBefore(d,sec.firstChild);
+    });
+  }
+}
+
 /* ---------------------------------------------------------------- partida */
+$("fxSafras").onclick=abrirPainelSafras;
+$("pnFechar").onclick=fecharPainelSafras;
+$("pnFundo").onclick=fecharPainelSafras;
+$("pnNova").onclick=perguntarNovaSafra;
 $("smNova").onclick=novaFazendaDoSumario;
 $("smAtual").onclick=()=>{ fecharSumario(); abrirAba("b1"); };
 $("smAtualizar").onclick=listarSumario;
