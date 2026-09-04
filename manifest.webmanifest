@@ -1,0 +1,23 @@
+{
+  "name": "Labor Rural — Gestão de Custos de Produção",
+  "short_name": "Custos Cacau",
+  "description": "Ferramenta de gestão de custos de produção de cacau — Labor Rural.",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f7f5",
+  "theme_color": "#024943",
+  "categories": ["business", "productivity", "finance"],
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Custo de Produção", "short_name": "Custos", "url": "./index.html#b3" },
+    { "name": "Colheita e Venda",  "short_name": "Colheita", "url": "./index.html#b4" }
+  ]
+}
