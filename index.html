@@ -103,8 +103,8 @@ section.block.on{display:block}
   .pgrid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
   .span2{grid-column:span 2}.span3{grid-column:span 3}
 }
-@media(min-width:1160px){ .pgrid.c5{grid-template-columns:repeat(5,minmax(0,1fr))} }
-@media(min-width:1260px){
+@media(min-width:1400px){ .pgrid.c5{grid-template-columns:repeat(5,minmax(0,1fr))} }
+@media(min-width:1460px){
   .pgrid.c6{grid-template-columns:repeat(6,minmax(0,1fr))}
   .grid.g-kpi.g7{grid-template-columns:repeat(7,minmax(0,1fr))}
   .grid.g-kpi.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
@@ -195,7 +195,7 @@ table.t td.me{font-weight:700;color:var(--brand-deep);background:var(--goldbg)!i
 .pbar.v80 .trilho i{background:var(--brand-deep)}
 
 .form2{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
-@media(min-width:1080px){
+@media(min-width:1400px){
   .form2{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
   .form2.f4{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
   .form2 .pgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -480,6 +480,57 @@ body:not(.trancado) #portao{display:none}
   details.fold summary{padding:14px 16px;font-size:14.5px}
   details.fold .fold-b{padding:4px 16px 18px}
   #portao{padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+
+
+/* ==================================================================== */
+/* ==============  CAMADA TABLET  (861px a 1399px)  =================== */
+/* iPad deitado, iPad Pro deitado e janelas medias de computador.       */
+/* Objetivo: campo com largura de leitura (>=230px) em vez dos 174px    */
+/* que sobravam quando as regras de 5 e 6 colunas entravam cedo demais. */
+/* ==================================================================== */
+@media (min-width:861px) and (max-width:1399px){
+
+  /* menu lateral mais enxuto devolve 30px de largura ao conteudo */
+  .shell{grid-template-columns:168px minmax(0,1fr)}
+  .sidenav{padding:14px 9px 20px}
+  .sidenav .gchip{font-size:12px;padding:9px 11px;min-height:44px}
+  .wrap{padding:0 16px 48px}
+
+  /* 4 colunas de campo em vez de 5 ou 6 */
+  .pgrid{grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:11px}
+  .span2,.span3{grid-column:auto}
+
+  /* o rotulo cabe em uma linha so, o que derruba a altura do cartao */
+  .pfield .pl{font-size:9.6px;letter-spacing:.6px;margin-bottom:5px}
+  .pfield .pb{font-size:10.8px;line-height:1.4}
+
+  /* KPI: 4 por linha, com folga para o numero */
+  .grid.g-kpi{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .kpi .kv{font-size:22px}
+
+  /* formulario empilhado ocupa a largura toda com folga */
+  .form2{gap:16px}
+
+  /* cabecalho do bloco: a nota vai para baixo em vez de espremer o titulo */
+  .block-head{flex-wrap:wrap}
+  .block-head .bh-note{margin-left:0;flex-basis:100%;font-size:11.5px}
+}
+
+/* ---------- ponte entre a faixa de tablet e a de 6 colunas ---------- */
+@media (min-width:1400px) and (max-width:1459px){
+  .pgrid.c6{grid-template-columns:repeat(auto-fit,minmax(212px,1fr))}
+}
+
+/* ---------- 9b. tablet em pe: 3 colunas largas, nao 4 estreitas ---------- */
+@media (min-width:521px) and (max-width:860px){
+  .pgrid{grid-template-columns:repeat(auto-fit,minmax(228px,1fr))}
+  .grid.g-kpi{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+  .kpi .kv{font-size:21px}
+  .wrap{padding:0 18px calc(104px + env(safe-area-inset-bottom))}
+  header.top h1{font-size:18px}
+  header.top .h1-ext{display:inline}
+  .faixa .fx.opc{display:inline}
 }
 
 /* ---------- 10. celular estreito: formulario numa coluna ---------- */
@@ -2035,7 +2086,7 @@ async function salvarArquivoTrabalho(){
     const f=dados.fazenda;
     const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
       meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.2.1",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.2.2",
         talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
       chaves,iv:c.iv,dados:c.dado};
     baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
@@ -4014,7 +4065,10 @@ function ligarMobile(){
   if(lista){
     lista.innerHTML="";
     document.querySelectorAll(".sidenav .gchip[data-tab]").forEach(b=>{
-      lista.appendChild(b.cloneNode(true));
+      const c=b.cloneNode(true);
+      /* cloneNode NAO copia o clique: o handler tem de ser posto no clone */
+      c.onclick=()=>abrirAba(c.getAttribute("data-tab"));
+      lista.appendChild(c);
     });
   }
 
