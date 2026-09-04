@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- © 2026 Labor Rural — Departamento de Inteligência.
-     Ferramenta de Gestão de Custos de Produção — versão 0.3.2
+     Ferramenta de Gestão de Custos de Produção — versão 0.3.3
      Novidades desta versão:
        · a fazenda passa a conter SAFRAS; cada safra tem os seus talhões, o seu
          inventário e os seus parâmetros econômicos;
@@ -1639,7 +1639,7 @@ body.trancado #sumario{display:none!important}
   <b>Fonte:</b> Departamento de Inteligência da Labor Rural, 2026.
   <span>Material didático componente do treinamento de Gestão de Propriedades Cacaueiras da ExpoCacau 2026.</span>
   <span><b>Ferramenta em desenvolvimento.</b></span>
-  <span style="margin-left:auto"><b>Versão:</b> 0.3.2</span>
+  <span style="margin-left:auto"><b>Versão:</b> 0.3.3</span>
 </footer>
 </div>
 </div></div>
@@ -2459,7 +2459,7 @@ async function salvarArquivoTrabalho(){
     const f=dados.fazenda;
     const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
       meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.2",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.3",
         talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
       chaves,iv:c.iv,dados:c.dado};
     baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
@@ -4379,6 +4379,60 @@ const CAT_INV=v=>{const n=norm(v);
   if(n.indexOf("EQUIPAMENTO")>=0 && n.indexOf("MAQUIN")<0) return "EQUIPAMENTOS";
   return "MÁQUINAS";};
 
+/* ---------------------------------------------------------------------------
+   ANCORAGEM DA SAFRA IMPORTADA  (correção da v0.3.3)
+
+   Custos e colheita têm data e se classificam sozinhos. Talhões, inventário e
+   os parâmetros econômicos NÃO têm data: no modelo por safra eles precisam ser
+   colocados na safra dos lançamentos da planilha.
+
+   Sem isto, eles caíam na safra do DIA DE HOJE (a que o SA() cria quando ainda
+   não há nenhuma), e uma planilha de 2024/2025 aparecia partida em duas: os
+   lançamentos em 2025 e os talhões e o inventário numa safra 2026 vazia.
+   --------------------------------------------------------------------------- */
+function janelaSafra(rot,uf){
+  const d=String(rot).replace(/[^0-9]/g,"");
+  return ufInfo(uf).cal==="civil"
+    ? {inicio:d.slice(-4)+"-01-01", fim:d.slice(-4)+"-12-31"}
+    : {inicio:d.slice(0,4)+"-09-01", fim:(d.slice(4,8)||(+d.slice(0,4)+1))+"-08-31"};
+}
+/* safra sem nada dentro e que nunca foi para a nuvem não vira chip:
+   é a safra do ano corrente que o app cria sozinho ao abrir em branco */
+function limparSafrasVazias(manter){
+  Object.keys(dados.safras||{}).forEach(r=>{
+    if(r===manter) return;
+    const s=dados.safras[r];
+    if(s.id) return;                       /* já existe na nuvem: preserva */
+    const temLanc = dados.custos.some(c=>safraReg(c)===r) ||
+                    dados.vendas.some(v=>safraReg(v)===r);
+    const fin=(dados.financeiro||{})[r];
+    const temFin = fin && CAMPOS_FIN.some(k=>num(fin[k])>0);
+    if(!(s.talhoes||[]).length && !(s.inventario||[]).length &&
+       !temLanc && !temFin && !num(s.terraNua) && !num(s.mdofMes)){
+      delete dados.safras[r];
+    }
+  });
+}
+
+function ancorarSafraImportada(novo,rots){
+  const uf=novo.__fazenda.uf||"BA";
+  const atuais=Object.keys(novo.safras);
+  const base=atuais.length ? novo.safras[atuais[0]] : SAFRA_NOVA(rots[0]);
+  novo.safras={};
+  rots.forEach(r=>{
+    const s=SAFRA_NOVA(r), j=janelaSafra(r,uf);
+    s.inicio=j.inicio; s.fim=j.fim;
+    s.terraNua=base.terraNua; s.mdofMes=base.mdofMes;
+    s.tma=base.tma||6; s.plAlvo=base.plAlvo||0.5;
+    /* a planilha traz uma lista só; se houver mais de uma safra, ela é
+       replicada em todas para você conferir e ajustar depois */
+    s.talhoes=(base.talhoes||[]).map(t=>Object.assign({},t,{id:uid(),chave:t.chave||uid()}));
+    s.inventario=(base.inventario||[]).map(x=>Object.assign({},x,{id:uid(),chave:x.chave||uid()}));
+    novo.safras[r]=s;
+  });
+  return rots[rots.length-1];
+}
+
 async function importarPlanilha(ev){
   const arq=ev.target.files[0]; if(!arq) return;
   ev.target.value="";
@@ -4588,23 +4642,36 @@ async function importarPlanilha(ev){
       '<button class="btn ghost" id="btnCancelarImp" type="button">Cancelar</button></div>';
 
     $("btnAplicarImp").onclick=()=>{
+      /* tudo o que não tem data vai para a safra dos lançamentos da planilha */
+      const rots=(safras.length?safras.slice():[safraAtual(novo.__fazenda.uf||"BA")]).sort();
+      const alvo=ancorarSafraImportada(novo,rots);
       if(somar){
         const f=dados.fazenda;
-        ["nome","produtor","consultor","cidade"].forEach(k=>{ if(novo.fazenda[k]) f[k]=novo.fazenda[k]; });
-        if(novo.fazenda.uf) f.uf=novo.fazenda.uf;
-        if(novo.fazenda.terraNua) f.terraNua=novo.fazenda.terraNua;
-        if(novo.fazenda.mdofMes) f.mdofMes=novo.fazenda.mdofMes;
-        const nomes=new Set(dados.talhoes.map(t=>t.nome.toUpperCase()));
-        novo.talhoes.forEach(t=>{ if(!nomes.has(t.nome.toUpperCase())){dados.talhoes.push(t);nomes.add(t.nome.toUpperCase());} });
-        const chaves=new Set(dados.inventario.map(x=>[x.cat,x.desc.toUpperCase(),x.valor,x.data].join("|")));
-        novo.inventario.forEach(x=>{const k=[x.cat,x.desc.toUpperCase(),x.valor,x.data].join("|");
-          if(!chaves.has(k)){dados.inventario.push(x);chaves.add(k);} });
+        ["nome","produtor","consultor","cidade"].forEach(k=>{ if(novo.__fazenda[k]) f[k]=novo.__fazenda[k]; });
+        if(novo.__fazenda.uf) f.uf=novo.__fazenda.uf;
+        rots.forEach(r=>{
+          if(!dados.safras[r]){
+            const s=SAFRA_NOVA(r), j=janelaSafra(r,dados.fazenda.uf);
+            s.inicio=j.inicio; s.fim=j.fim; dados.safras[r]=s;
+          }
+          const dst=dados.safras[r], org=novo.safras[r];
+          if(dst.situacao==="fechada") return;          /* safra fechada não recebe */
+          if(org.terraNua) dst.terraNua=org.terraNua;
+          if(org.mdofMes)  dst.mdofMes=org.mdofMes;
+          const nomes=new Set((dst.talhoes||[]).map(t=>String(t.nome||"").toUpperCase()));
+          (org.talhoes||[]).forEach(t=>{ const k=String(t.nome||"").toUpperCase();
+            if(!nomes.has(k)){ dst.talhoes.push(t); nomes.add(k); } });
+          const chaves=new Set((dst.inventario||[]).map(x=>[x.cat,String(x.desc||"").toUpperCase(),x.valor,x.data].join("|")));
+          (org.inventario||[]).forEach(x=>{ const k=[x.cat,String(x.desc||"").toUpperCase(),x.valor,x.data].join("|");
+            if(!chaves.has(k)){ dst.inventario.push(x); chaves.add(k); } });
+        });
         dados.custos=dados.custos.concat(novo.custos);
         dados.vendas=dados.vendas.concat(novo.vendas);
       }else{
         dados=novo;
       }
-      safraSel=null; gravar(); carregarFazenda(); render(); abrirAba("b7");
+      safraSel=alvo; limparSafrasVazias(alvo);
+      gravar(); carregarFazenda(); render(); abrirAba("b7");
       aviso("Importado: "+novo.custos.length+" desembolsos e "+novo.vendas.length+" colheitas"+
         (safras.length?" · safra "+safras.join(", "):"")+".");
       rel.innerHTML='<div class="note info"><b>Importação aplicada</b>'+
@@ -5617,7 +5684,7 @@ async function fecharSafra(rot){
   try{
     await salvarNuvem(true);
     await api("retratos",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},
-      body:[{safra_id:s.id,versao_app:"0.3.2",gerado_por:sessao?sessao.user.id:null,
+      body:[{safra_id:s.id,versao_app:"0.3.3",gerado_por:sessao?sessao.user.id:null,
              conteudo:JSON.parse(JSON.stringify(calcular(rot)))}]}).catch(()=>{});
     await api("safras?id=eq."+s.id,{method:"PATCH",body:{situacao:"fechada"}});
     s.situacao="fechada";
