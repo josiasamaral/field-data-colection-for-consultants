@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- © 2026 Labor Rural — Departamento de Inteligência.
-     Ferramenta de Gestão de Custos de Produção — versão 0.3.1
+     Ferramenta de Gestão de Custos de Produção — versão 0.3.2
      Novidades desta versão:
        · a fazenda passa a conter SAFRAS; cada safra tem os seus talhões, o seu
          inventário e os seus parâmetros econômicos;
@@ -387,6 +387,33 @@ body.trancado #sumario{display:none!important}
 .dlg-bts{display:flex;flex-direction:column;gap:8px}
 .dlg-bts .btn{width:100%;justify-content:center}
 
+/* importar / exportar / arquivo: tres cartoes lado a lado */
+.grid.g-3ie{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:1100px){.grid.g-3ie{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){.grid.g-3ie{grid-template-columns:1fr}}
+
+/* =============== CAMPOS SEM TEXTO E SEM ROTULO (v0.3.2) ===============
+   O tipo do campo e dito pela cor, nao por etiqueta:
+     amarelo        = voce preenche
+     amarelo claro  = opcional
+     cinza          = a ferramenta calcula                                */
+.pfield .pb{display:none!important}
+.pfield .pl .edit,.pfield .pl .opt,.pfield .pl .aut{display:none!important}
+.pfield:has(.pl .opt){background:#fffdf4;border-color:#eee3c3}
+.pfield:has(.pl .opt) .pl{color:#c4a75a}
+.pgrid > .pfield:has(.pl .opt){border-left-color:#e2d29a}
+/* todos os campos com a mesma altura: rotulo em cima, caixa embaixo */
+.pgrid{align-items:stretch}
+.pfield{display:flex;flex-direction:column;justify-content:flex-start;padding:8px 11px}
+.pfield .pl{margin-bottom:5px;min-height:14px}
+.pfield input,.pfield select{height:40px;padding:0 10px}
+.pfield input[type=date]{padding:0 8px}
+.pfield.calc .pv{font-size:19px;line-height:40px;min-height:40px}
+.card > h3{font-size:15px;margin-bottom:9px}
+.card{padding:13px 14px}
+/* textos de apresentacao dentro dos cartoes somem */
+.card > p{display:none}
+
 /* =============== ORDEM DE PREENCHIMENTO (v0.3.1) ===============
    Dentro de cada cartao, o que voce digita vem primeiro; o que a
    ferramenta calcula sozinha vai para o fim. A ordem visual muda sem
@@ -416,6 +443,13 @@ body.trancado #sumario{display:none!important}
 .sfr .sfr-b{display:flex;gap:6px;flex-wrap:wrap}
 .trava{background:#fffbe9;border:1.5px solid #e7d9a8;border-radius:var(--rad-s);
   padding:10px 14px;margin:12px 0;font-size:12.5px;color:var(--gold);font-weight:600}
+
+/* quadros de destino e repeticao: baixos e alinhados */
+.card.sub{padding:10px 12px}
+.card.sub > h3{font-size:12.5px;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px}
+.card.sub .switch{padding:5px 12px 5px 9px;font-size:12.5px}
+.card.sub .pfield{padding:6px 10px}
+.c-dest{align-items:start}
 
 /* =============== CHAVES LIGA/DESLIGA VISIVEIS =============== */
 .switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;
@@ -1016,16 +1050,16 @@ body.trancado #sumario{display:none!important}
     </div>
     <div class="act-row" style="margin-top:9px;gap:8px">
       <button class="btn ghost" id="btnObs" type="button">+ observação</button>
-      <span style="font-size:11.5px;color:var(--muted)">Tab anda pelos campos · <b>Enter salva</b> · a unidade e o valor vêm do último lançamento do mesmo elemento</span>
+      <span style="font-size:11px;color:var(--muted)"><b>Enter</b> salva</span>
     </div>
     <div class="pfield" id="cObsBox" style="margin-top:9px;display:none"><div class="pl">Observação <span class="opt">OPCIONAL</span></div>
       <input type="text" id="cObs" placeholder="Marca do adubo, nome do prestador de serviço, número da nota…"></div>
 
-    <div class="grid g-2" style="margin-top:11px">
-      <div class="card" style="background:#fffbe9;border-color:#e7d9a8;margin:0;box-shadow:none">
+    <div class="grid g-2 c-dest" style="margin-top:9px">
+      <div class="card sub" style="background:#fffbe9;border-color:#e7d9a8;margin:0;box-shadow:none">
         <h3 style="color:var(--gold)">Destino do desembolso</h3>
-        <label class="switch"><input type="checkbox" id="cRatear"> Ratear entre vários talhões, na proporção da área</label>
-        <div id="cTalhaoUnico" style="margin-top:10px">
+        <label class="switch"><input type="checkbox" id="cRatear"> Ratear entre talhões pela área</label>
+        <div id="cTalhaoUnico" style="margin-top:8px">
           <div class="pfield" style="background:#fff"><div class="pl">Talhão <span class="edit">EDITÁVEL</span></div>
             <select id="cTalhao"></select></div>
         </div>
@@ -1039,13 +1073,9 @@ body.trancado #sumario{display:none!important}
         </div>
       </div>
 
-      <div class="card" style="background:#fffbe9;border-color:#e7d9a8;margin:0;box-shadow:none">
+      <div class="card sub" style="background:#fffbe9;border-color:#e7d9a8;margin:0;box-shadow:none">
         <h3 style="color:var(--gold)">Repetição na safra</h3>
-        <label class="switch"><input type="checkbox" id="cRepetir"> Repetir este desembolso em vários meses</label>
-        <div style="font-size:11.5px;color:var(--muted);margin:6px 0 0 26px">
-          O lançamento mês a mês é o caminho preferencial. Use a repetição só para custos que se
-          repetem iguais, como salário fixo ou energia contratada.
-        </div>
+        <label class="switch"><input type="checkbox" id="cRepetir"> Repetir em vários meses</label>
         <div id="cMesesBox" style="display:none">
           <div class="mesgrid" id="cMeses"></div>
           <div class="act-row" style="margin-top:8px">
@@ -1475,23 +1505,7 @@ body.trancado #sumario{display:none!important}
     <span class="bh-note">Excel, formato ROTA, PDF e arquivo da propriedade</span>
   </div>
 
-  <div class="grid g-2">
-    <div class="card">
-      <h3>Exportar</h3>
-      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">
-        Três saídas: a planilha completa da fazenda, o arquivo no formato da base ROTA e o PDF.
-      </p>
-      <div class="act-row" style="margin-top:0">
-        <button class="btn" id="btnXlsx" type="button">Exportar Planilha da Fazenda</button>
-        <button class="btn" id="btnRota" type="button">Exportar Dados para a Rota / BD</button>
-        <button class="btn" id="btnPdf" type="button">Gerar PDF</button>
-      </div>
-      <div class="note info" style="margin-top:10px">
-        <b>Formato ROTA / BD</b>
-        Sai com as abas e os cabeçalhos da base de consolidação, prontos para carregar.
-      </div>
-    </div>
-
+  <div class="grid g-3ie">
     <div class="card">
       <h3>Importar planilha de gestão <span class="h3n">— formato Labor Rural (.xlsx)</span></h3>
       <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">
@@ -1522,6 +1536,22 @@ body.trancado #sumario{display:none!important}
     </div>
 
     <div class="card">
+      <h3>Exportar</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">
+        Três saídas: a planilha completa da fazenda, o arquivo no formato da base ROTA e o PDF.
+      </p>
+      <div class="act-row" style="margin-top:0">
+        <button class="btn" id="btnXlsx" type="button">Exportar Planilha da Fazenda</button>
+        <button class="btn" id="btnRota" type="button">Exportar Dados para a Rota / BD</button>
+        <button class="btn" id="btnPdf" type="button">Gerar PDF</button>
+      </div>
+      <div class="note info" style="margin-top:10px">
+        <b>Formato ROTA / BD</b>
+        Sai com as abas e os cabeçalhos da base de consolidação, prontos para carregar.
+      </div>
+    </div>
+
+    <div class="card">
       <h3>Arquivo de trabalho <span class="h3n">— para levar da fazenda para casa</span></h3>
       <div class="note info" style="margin-bottom:12px">
         <b>É o caminho do pendrive</b>
@@ -1533,17 +1563,14 @@ body.trancado #sumario{display:none!important}
         <label class="btn ghost" style="cursor:pointer">Abrir arquivo de trabalho
           <input type="file" id="fArqTrab" accept=".lrz,.json" style="display:none"></label>
       </div>
-      <div id="arqRelato" style="margin-top:14px"></div>
-    </div>
-
-    <div class="card">
-      <h3>Recomeçar</h3>
-      <div class="act-row" style="margin-top:0">
+      <div id="arqRelato" style="margin-top:12px"></div>
+      <div class="act-row" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line)">
         <button class="btn scn-des" id="btnLimpar" type="button">Apagar tudo e recomeçar</button>
+        <input type="file" id="fImport" accept=".json,application/json" style="display:none">
+        <button id="btnBackup" type="button" style="display:none"></button>
       </div>
-      <input type="file" id="fImport" accept=".json,application/json" style="display:none">
-      <button id="btnBackup" type="button" style="display:none"></button>
     </div>
+  </div>
 
   </section>
 
@@ -1612,7 +1639,7 @@ body.trancado #sumario{display:none!important}
   <b>Fonte:</b> Departamento de Inteligência da Labor Rural, 2026.
   <span>Material didático componente do treinamento de Gestão de Propriedades Cacaueiras da ExpoCacau 2026.</span>
   <span><b>Ferramenta em desenvolvimento.</b></span>
-  <span style="margin-left:auto"><b>Versão:</b> 0.3.1</span>
+  <span style="margin-left:auto"><b>Versão:</b> 0.3.2</span>
 </footer>
 </div>
 </div></div>
@@ -2432,7 +2459,7 @@ async function salvarArquivoTrabalho(){
     const f=dados.fazenda;
     const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
       meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.1",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.2",
         talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
       chaves,iv:c.iv,dados:c.dado};
     baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
@@ -5590,7 +5617,7 @@ async function fecharSafra(rot){
   try{
     await salvarNuvem(true);
     await api("retratos",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},
-      body:[{safra_id:s.id,versao_app:"0.3.1",gerado_por:sessao?sessao.user.id:null,
+      body:[{safra_id:s.id,versao_app:"0.3.2",gerado_por:sessao?sessao.user.id:null,
              conteudo:JSON.parse(JSON.stringify(calcular(rot)))}]}).catch(()=>{});
     await api("safras?id=eq."+s.id,{method:"PATCH",body:{situacao:"fechada"}});
     s.situacao="fechada";
