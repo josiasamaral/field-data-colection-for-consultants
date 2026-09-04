@@ -38,7 +38,7 @@ header.top h1{font-family:var(--font-d);font-weight:600;font-size:27px;letter-sp
 header.top .sub{font-size:13.5px;opacity:.85;margin-top:3px;font-weight:300;letter-spacing:.4px}
 
 .shell{max-width:none;margin:0;display:grid;grid-template-columns:198px minmax(0,1fr);align-items:start}
-.sidenav{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;
+.sidenav{position:sticky;top:var(--fx-h,0px);align-self:start;max-height:100vh;overflow-y:auto;
   padding:16px 10px 24px;display:flex;flex-direction:column;gap:5px;border-right:1px solid var(--line)}
 .sidenav .sn-tit{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);
   font-weight:700;padding:0 8px 6px}
@@ -49,7 +49,7 @@ header.top .sub{font-size:13.5px;opacity:.85;margin-top:3px;font-weight:300;lett
 .conteudo{min-width:0}
 @media (max-width:980px){
   .shell{grid-template-columns:1fr}
-  .sidenav{position:sticky;top:0;z-index:40;flex-direction:row;overflow-x:auto;overflow-y:hidden;
+  .sidenav{position:sticky;top:var(--fx-h,0px);z-index:40;flex-direction:row;overflow-x:auto;overflow-y:hidden;
     max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:8px 14px;
     background:rgba(244,247,245,.95);backdrop-filter:blur(8px)}
   .sidenav .sn-tit{display:none}
@@ -257,6 +257,52 @@ footer.ft b{color:var(--brand-3)}
   .kpi .kv{font-size:22px}
   .gchip{font-size:12px;padding:7px 12px}
 }
+/* ===================== PORTAO DE ENTRADA (v0.2.0) ===================== */
+#portao{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:linear-gradient(135deg,var(--brand-deep) 0%,var(--brand) 55%,var(--brand-3) 100%);
+  overflow:auto}
+#portao .pcx{width:100%;max-width:430px;background:var(--panel);border-radius:var(--rad);
+  box-shadow:0 18px 60px rgba(0,0,0,.28);padding:30px 30px 26px}
+#portao .plogo{display:flex;justify-content:center;margin-bottom:20px}
+#portao .plogo img{height:62px;display:block}
+#portao h2{font-family:var(--font-d);font-weight:600;font-size:21px;text-align:center;margin-bottom:4px}
+#portao .psub{text-align:center;font-size:12.5px;color:var(--muted);margin-bottom:22px;line-height:1.5}
+#portao label{display:block;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--muted);margin:0 0 5px}
+#portao input{width:100%;font-family:var(--font-b);font-size:15px;color:var(--input-ink);font-weight:500;
+  padding:11px 13px;border:1.5px solid var(--line);border-radius:var(--rad-s);background:#fff;margin-bottom:14px}
+#portao input:focus{outline:0;border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(18,147,137,.15)}
+#portao .btn{width:100%;justify-content:center;margin-bottom:9px}
+#portao .pdiv{display:flex;align-items:center;gap:10px;margin:16px 0 14px;color:var(--muted);font-size:11px;
+  letter-spacing:.5px;text-transform:uppercase}
+#portao .pdiv::before,#portao .pdiv::after{content:"";flex:1;height:1px;background:var(--line)}
+#portao .pmsg{margin-top:14px}
+#portao .pft{margin-top:18px;padding-top:15px;border-top:1px solid var(--line);
+  font-size:11.5px;color:var(--muted);line-height:1.6;text-align:center}
+#portao .plink{background:none;border:0;color:var(--brand-2);font-family:var(--font-b);font-size:11.5px;
+  font-weight:600;cursor:pointer;text-decoration:underline;padding:0}
+#portao .pbusy{text-align:center;font-size:13px;color:var(--brand);font-weight:600;padding:8px 0}
+
+body.trancado header.top,body.trancado .shell,body.trancado .faixa{display:none}
+body:not(.trancado) #portao{display:none}
+
+/* ===================== FAIXA DE SITUACAO ===================== */
+.faixa{position:sticky;top:0;z-index:80;background:var(--brand-deep);color:#fff;
+  display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:8px 20px;font-size:12.5px}
+.faixa .fx{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.faixa .fdot{width:8px;height:8px;border-radius:50%;background:#8fd3c4;flex:0 0 auto}
+.faixa .fdot.off{background:#e0b45f}
+.faixa .fdot.pend{background:#f0a53c}
+.faixa b{font-weight:600}
+.faixa .fsep{opacity:.35}
+.faixa .fesp{flex:1 1 auto}
+.faixa .fbtn{background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.28);
+  font-family:var(--font-b);font-size:11.5px;font-weight:600;padding:5px 12px;border-radius:7px;cursor:pointer;
+  letter-spacing:.3px;white-space:nowrap}
+.faixa .fbtn:hover{background:rgba(255,255,255,.24)}
+@media(max-width:700px){.faixa{font-size:11.5px;padding:7px 12px;gap:6px 10px}.faixa .fesp{flex-basis:100%}}
+@media print{.faixa{display:none}}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @page{size:A4 landscape;margin:10mm}
 @media print{
@@ -277,8 +323,34 @@ footer.ft b{color:var(--brand-3)}
 }
 </style>
 </head>
-<body>
+<body class="trancado">
 <noscript><div style="max-width:900px;margin:30px auto;padding:16px 22px;background:#fbeae8;border:1px solid #eccfcb;border-radius:10px;color:#c0392b;font-family:sans-serif">Esta ferramenta requer JavaScript habilitado no navegador.</div></noscript>
+
+<!-- ================= PORTAO DE ENTRADA ================= -->
+<div id="portao">
+  <div class="pcx">
+    <div class="plogo"><img id="ptLogo" alt="Labor Rural"></div>
+    <h2>Ferramenta de Gestão de Custos</h2>
+    <div class="psub">Entre com o e-mail e a senha cadastrados pela Labor Rural</div>
+
+    <div id="ptForm">
+      <label for="ptEmail">E-mail</label>
+      <input type="email" id="ptEmail" autocomplete="username" placeholder="voce@laborrural.com.br">
+      <label for="ptSenha">Senha</label>
+      <input type="password" id="ptSenha" autocomplete="current-password" placeholder="••••••••">
+      <button class="btn big" id="ptEntrar" type="button">Entrar</button>
+      <div class="pdiv">ou</div>
+      <button class="btn ghost" id="ptOffline" type="button">Trabalhar offline</button>
+      <div class="pmsg" id="ptMsg"></div>
+      <div class="pft" id="ptRodape">
+        O modo offline exige que você já tenha entrado uma vez neste computador com internet.
+        <br><button class="plink" id="ptEsquecer" type="button">Remover uma conta deste computador</button>
+      </div>
+    </div>
+
+    <div id="ptBusy" style="display:none"><div class="pbusy" id="ptBusyTxt">Verificando…</div></div>
+  </div>
+</div>
 
 <header class="top">
   <div class="wrap">
@@ -289,6 +361,17 @@ footer.ft b{color:var(--brand-3)}
     </div>
   </div>
 </header>
+
+<div class="faixa" id="faixa">
+  <span class="fx"><span class="fdot" id="fxDot"></span><b id="fxUser">—</b></span>
+  <span class="fx"><span class="fsep">|</span> <span id="fxPapel">Consultor</span></span>
+  <span class="fx"><span class="fsep">|</span> <span id="fxRede">Online</span></span>
+  <span class="fx"><span class="fsep">|</span> <span id="fxPend">Tudo salvo</span></span>
+  <span class="fesp"></span>
+  <button class="fbtn" id="fxSalvarArq" type="button">Salvar arquivo de trabalho</button>
+  <button class="fbtn" id="fxTrancar" type="button">Trancar</button>
+  <button class="fbtn" id="fxSair" type="button">Sair</button>
+</div>
 
 <div class="shell">
 <nav class="sidenav" role="tablist" aria-label="Seções da ferramenta">
@@ -1008,15 +1091,31 @@ footer.ft b{color:var(--brand-3)}
     </div>
 
     <div class="card">
-      <h3>Arquivo da propriedade</h3>
-      <div class="note" style="margin-bottom:14px">
-        <b>Salve o arquivo de vez em quando</b>
-        Os lançamentos ficam guardados só neste aparelho, dentro do navegador. Limpar o histórico,
-        trocar de celular ou usar aba anônima apaga tudo.
+      <h3>Arquivo de trabalho <span class="h3n">— para levar da fazenda para casa</span></h3>
+      <div class="note info" style="margin-bottom:14px">
+        <b>É o caminho do pendrive</b>
+        Lance na fazenda sem internet, clique em <b>Salvar arquivo de trabalho</b>, desligue o computador.
+        Em casa, abra a ferramenta, clique em <b>Abrir arquivo de trabalho</b> e envie para a nuvem.
+        O arquivo sai fechado com a sua senha — quem não a tiver não consegue ler o conteúdo.
       </div>
       <div class="act-row" style="margin-top:0">
-        <button class="btn" id="btnBackup" type="button">Salvar dados da propriedade</button>
-        <label class="btn ghost" style="cursor:pointer">Carregar dados da propriedade
+        <button class="btn" id="btnSalvarArq" type="button">Salvar arquivo de trabalho</button>
+        <label class="btn ghost" style="cursor:pointer">Abrir arquivo de trabalho
+          <input type="file" id="fArqTrab" accept=".lrz,.json" style="display:none"></label>
+      </div>
+      <div id="arqRelato" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h3>Cópia aberta <span class="h3n">— sem senha, para emergência</span></h3>
+      <div class="note" style="margin-bottom:14px">
+        <b>Este arquivo não tem proteção</b>
+        Qualquer pessoa que o receba lê os dados da propriedade. Use só para socorrer um caso perdido
+        ou para conferir os números fora da ferramenta. Para o dia a dia, prefira o arquivo de trabalho.
+      </div>
+      <div class="act-row" style="margin-top:0">
+        <button class="btn ghost" id="btnBackup" type="button">Salvar cópia aberta (.json)</button>
+        <label class="btn ghost" style="cursor:pointer">Carregar cópia aberta
           <input type="file" id="fImport" accept=".json,application/json" style="display:none"></label>
       </div>
       <div class="act-row">
@@ -1058,21 +1157,21 @@ footer.ft b{color:var(--brand-3)}
   </div>
 
   <div class="card" id="nvLoginCard">
-    <h3>Entrar <span class="h3n">— use o e-mail cadastrado pela Labor Rural</span></h3>
+    <h3>Você entrou em modo offline</h3>
     <div class="pgrid c3">
-      <div class="pfield"><div class="pl">E-mail <span class="edit">EDITÁVEL</span></div>
-        <input type="email" id="nvEmail" autocomplete="username" placeholder="voce@laborrural.com.br"></div>
-      <div class="pfield"><div class="pl">Senha <span class="edit">EDITÁVEL</span></div>
-        <input type="password" id="nvSenha" autocomplete="current-password" placeholder="••••••••"></div>
-      <div class="pfield calc"><div class="pl">Situação <span class="aut">AUTOMÁTICO</span></div>
-        <div class="pv" id="nvSituacao">Desconectado</div></div>
+      <div class="pfield calc"><div class="pl">Conta <span class="aut">AUTOMÁTICO</span></div>
+        <div class="pv" id="nvOffUser">—</div></div>
+      <div class="pfield calc"><div class="pl">Internet <span class="aut">AUTOMÁTICO</span></div>
+        <div class="pv" id="nvSituacao">Verificando…</div></div>
+      <div class="pfield calc"><div class="pl">Lançamentos guardados <span class="aut">AUTOMÁTICO</span></div>
+        <div class="pv" id="nvOffQtd">0</div></div>
     </div>
     <div class="act-row">
-      <button class="btn big" id="btnEntrar" type="button">Entrar</button>
+      <button class="btn big" id="btnConectar" type="button">Conectar à nuvem agora</button>
     </div>
-    <div class="note info" style="margin-top:12px"><b>A ferramenta funciona sem entrar</b>
-      Tudo o que você lança fica guardado neste navegador. A nuvem serve para não perder os dados
-      se o computador falhar, e para a Labor Rural consolidar os produtores.</div>
+    <div class="note info" style="margin-top:12px"><b>Nada se perde enquanto isso</b>
+      Tudo o que você lança fica guardado neste computador, fechado com a sua senha. Quando houver
+      internet, conecte aqui e envie — ou salve o arquivo de trabalho no bloco 08 e envie de casa.</div>
     <div id="nvErro"></div>
   </div>
 
@@ -1093,7 +1192,7 @@ footer.ft b{color:var(--brand-3)}
         <button class="btn big" id="btnSalvarNuvem" type="button">Salvar na nuvem</button>
         <button class="btn ghost" id="btnNovaFazenda" type="button">Enviar como nova fazenda</button>
         <button class="btn ghost" id="btnAtualizarLista" type="button">Atualizar lista</button>
-        <button class="btn ghost" id="btnSair" type="button">Sair</button>
+        <button class="btn ghost" id="btnSair" type="button">Desconectar da nuvem</button>
       </div>
       <div id="nvErro2"></div>
     </div>
@@ -1113,7 +1212,7 @@ footer.ft b{color:var(--brand-3)}
   <b>Fonte:</b> Departamento de Inteligência da Labor Rural, 2026.
   <span>Material didático componente do treinamento de Gestão de Propriedades Cacaueiras da ExpoCacau 2026.</span>
   <span><b>Ferramenta em desenvolvimento.</b></span>
-  <span style="margin-left:auto"><b>Versão:</b> 0.1.0</span>
+  <span style="margin-left:auto"><b>Versão:</b> 0.2.0</span>
 </footer>
 </div>
 </div></div>
@@ -1485,11 +1584,333 @@ try{localStorage.setItem("__t","1");localStorage.removeItem("__t");}catch(e){tem
 const VAZIO=()=>({fazenda:{nome:"",produtor:"",consultor:"",cidade:"",uf:"BA",unid:"KG",terraNua:0,mdofMes:0,tma:6,plAlvo:0.5},
   talhoes:[],inventario:[],custos:[],vendas:[],financeiro:{}});
 let dados=VAZIO(), safraSel=null;
-function ler(){ if(!temDisco)return;
-  try{const b=localStorage.getItem(CHAVE); if(b) dados=Object.assign(VAZIO(),JSON.parse(b));}catch(e){} }
 function gravar(){ if(typeof marcarSujo==="function") marcarSujo();
   if(!temDisco)return;
+  if(chaveCofre){ agendarCofre(); return; }
   try{localStorage.setItem(CHAVE,JSON.stringify(dados));}catch(e){aviso("Não deu para guardar. Baixe a cópia de segurança.");} }
+
+/* ==========================================================================
+   TRANCA — criptografia, cofre local e arquivo de trabalho          v0.2.0
+   ==========================================================================
+   SENHA MESTRE DA LABOR RURAL. Abre qualquer arquivo de trabalho e recupera
+   o cofre de qualquer computador, mesmo que o consultor esqueça a senha dele.
+   Troque aqui se quiser outra. Quem tiver o arquivo HTML consegue lê-la, então
+   ela vale como chave de recuperação da equipe, não como segredo forte.
+   ========================================================================== */
+const SENHA_MESTRE = "LR123";
+
+const ITER         = 200000;
+const CHAVE_CONTAS = "lr_contas_v1";
+const CHAVE_COFRE  = "lr_cofre_v1";
+const temCripto = !!(window.crypto && window.crypto.subtle && window.crypto.subtle.importKey);
+
+let chaveCofre=null, chavesCofre=null, saltConta=null, kekViva=null;
+let contaViva="", senhaViva="", papelViva="consultor", nomeViva="", modoOffline=false;
+let tmrCofre=null, gravandoCofre=false, refazerCofre=false;
+
+const b64  = u8 => { let s=""; for(let i=0;i<u8.length;i++) s+=String.fromCharCode(u8[i]); return btoa(s); };
+const deb64= s  => Uint8Array.from(atob(s), c=>c.charCodeAt(0));
+const rnd  = n  => crypto.getRandomValues(new Uint8Array(n));
+const bytes= s  => new TextEncoder().encode(s);
+const texto= b  => new TextDecoder().decode(b);
+
+async function derivar(senha,salt){
+  const base=await crypto.subtle.importKey("raw",bytes(senha),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:ITER,hash:"SHA-256"},
+    base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+async function cifrar(chave,txt){
+  const iv=rnd(12);
+  const c=await crypto.subtle.encrypt({name:"AES-GCM",iv},chave,bytes(txt));
+  return {iv:b64(iv),dado:b64(new Uint8Array(c))};
+}
+async function decifrar(chave,iv,dado){
+  return texto(await crypto.subtle.decrypt({name:"AES-GCM",iv:deb64(iv)},chave,deb64(dado)));
+}
+
+/* --- envelope de duas chaves: consultor + mestre --- */
+async function embrulhar(dek,kek,saltCons){
+  const cru=new Uint8Array(await crypto.subtle.exportKey("raw",dek));
+  const i1=rnd(12);
+  const c1=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:i1},kek,cru));
+  const s2=rnd(16), k2=await derivar(SENHA_MESTRE,s2), i2=rnd(12);
+  const c2=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:i2},k2,cru));
+  return [{tipo:"consultor",salt:b64(saltCons),iv:b64(i1),dek:b64(c1)},
+          {tipo:"mestre",   salt:b64(s2),      iv:b64(i2),dek:b64(c2)}];
+}
+async function desembrulharComChave(chaves,kek){
+  for(const k of chaves){
+    if(k.tipo!=="consultor") continue;
+    try{
+      const cru=await crypto.subtle.decrypt({name:"AES-GCM",iv:deb64(k.iv)},kek,deb64(k.dek));
+      return crypto.subtle.importKey("raw",cru,{name:"AES-GCM"},true,["encrypt","decrypt"]);
+    }catch(e){}
+  }
+  return null;
+}
+async function desembrulharComSenha(chaves,senha,ordem){
+  const lista=(ordem||["consultor","mestre"]);
+  for(const tipo of lista) for(const k of chaves){
+    if(k.tipo!==tipo) continue;
+    try{
+      const kek=await derivar(senha,deb64(k.salt));
+      const cru=await crypto.subtle.decrypt({name:"AES-GCM",iv:deb64(k.iv)},kek,deb64(k.dek));
+      return crypto.subtle.importKey("raw",cru,{name:"AES-GCM"},true,["encrypt","decrypt"]);
+    }catch(e){}
+  }
+  return null;
+}
+
+/* --- contas gravadas neste computador --- */
+function lerContas(){ try{ return JSON.parse(localStorage.getItem(CHAVE_CONTAS))||{}; }catch(e){ return {}; } }
+function gravarContas(c){ try{ localStorage.setItem(CHAVE_CONTAS,JSON.stringify(c)); }catch(e){} }
+
+/* --- cofre local --- */
+function agendarCofre(){ clearTimeout(tmrCofre); tmrCofre=setTimeout(gravarCofre,250); }
+async function gravarCofre(){
+  if(!chaveCofre||!temDisco) return;
+  if(gravandoCofre){ refazerCofre=true; return; }
+  gravandoCofre=true;
+  try{
+    const c=await cifrar(chaveCofre,JSON.stringify(dados));
+    localStorage.setItem(CHAVE_COFRE,JSON.stringify({app:"LR_COFRE",v:1,conta:contaViva,
+      iter:ITER,chaves:chavesCofre,iv:c.iv,dados:c.dado,salvoEm:new Date().toISOString()}));
+  }catch(e){ aviso("Não deu para guardar neste computador. Salve o arquivo de trabalho."); }
+  gravandoCofre=false;
+  if(refazerCofre){ refazerCofre=false; agendarCofre(); }
+}
+async function novoCofre(){
+  const dek=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
+  chaveCofre=dek; chavesCofre=await embrulhar(dek,kekViva,saltConta);
+  await gravarCofre();
+}
+async function abrirCofre(){
+  const b=temDisco?localStorage.getItem(CHAVE_COFRE):null;
+  if(!b){
+    const velho=temDisco?localStorage.getItem(CHAVE):null;
+    if(velho){ try{ dados=Object.assign(VAZIO(),JSON.parse(velho)); }catch(e){} }
+    await novoCofre();
+    try{ localStorage.removeItem(CHAVE); }catch(e){}
+    return;
+  }
+  const pac=JSON.parse(b);
+  let dek=await desembrulharComChave(pac.chaves,kekViva);
+  let refazer=false;
+  if(!dek){ dek=await desembrulharComSenha(pac.chaves,SENHA_MESTRE,["mestre"]); refazer=true; }
+  if(!dek) throw new Error("COFRE");
+  chaveCofre=dek;
+  chavesCofre = refazer ? await embrulhar(dek,kekViva,saltConta) : pac.chaves;
+  try{ dados=Object.assign(VAZIO(),JSON.parse(await decifrar(dek,pac.iv,pac.dados))); }
+  catch(e){ throw new Error("COFRE"); }
+  if(refazer) await gravarCofre();
+}
+
+/* --- preparar a conta (cria ou confere) --- */
+async function prepararConta(email,senha,papel,nome,exigirConfere){
+  const contas=lerContas(); const reg=contas[email];
+  let salt = reg ? deb64(reg.salt) : rnd(16);
+  let kek  = await derivar(senha,salt);
+  let ok   = !reg;
+  if(reg){ try{ ok = (await decifrar(kek,reg.prova.iv,reg.prova.dado))==="LR-OK"; }catch(e){ ok=false; } }
+  if(!ok){
+    if(exigirConfere) return null;      // offline: senha errada
+    salt=rnd(16); kek=await derivar(senha,salt);   // online: a senha mudou, recria
+  }
+  saltConta=salt; kekViva=kek; contaViva=email; senhaViva=senha;
+  papelViva = papel || (reg&&reg.papel) || "consultor";
+  nomeViva  = nome  || (reg&&reg.nome)  || "";
+  const prova=await cifrar(kek,"LR-OK");
+  contas[email]={salt:b64(salt),prova,papel:papelViva,nome:nomeViva,ultimo:new Date().toISOString()};
+  gravarContas(contas);
+  return true;
+}
+
+/* --- portão --- */
+function ptMsg(txt,tipo){
+  const e=$("ptMsg"); if(!e) return;
+  e.innerHTML = txt ? '<div class="note'+(tipo==="info"?" info":"")+'"><b>'+
+    (tipo==="info"?"Atenção":"Não deu certo")+'</b>'+esc(txt)+'</div>' : "";
+}
+function ptOcupado(on,txt){
+  $("ptForm").style.display = on?"none":"";
+  $("ptBusy").style.display = on?"":"none";
+  if(txt) $("ptBusyTxt").textContent=txt;
+}
+async function entrarOnline(){
+  ptMsg("");
+  const email=$("ptEmail").value.trim().toLowerCase(), senha=$("ptSenha").value;
+  if(!email||!senha){ ptMsg("Informe o e-mail e a senha."); return; }
+  if(!temCripto){ ptMsg("Este navegador não consegue proteger os dados do jeito que a ferramenta abriu. Use o endereço da Labor Rural na internet (https), não o arquivo solto no computador."); return; }
+  if(!nuvemConfigurada()){ ptMsg("A URL e a chave do Supabase ainda não foram preenchidas no topo do arquivo."); return; }
+  ptOcupado(true,"Conferindo com a Labor Rural…");
+  try{
+    const j=await autApi("token?grant_type=password",{email,password:senha});
+    sessao={access_token:j.access_token,refresh_token:j.refresh_token,
+      user:{id:j.user.id,email:j.user.email}};
+    localStorage.setItem(CHAVE_SESSAO,JSON.stringify(sessao));
+    let papel="consultor", nome="";
+    try{ const pf=await api("perfis?select=nome,papel&id=eq."+sessao.user.id);
+         if(pf&&pf.length){ papel=pf[0].papel||"consultor"; nome=pf[0].nome||""; } }catch(e){}
+    ptOcupado(true,"Abrindo seus dados…");
+    await prepararConta(email,senha,papel,nome,false);
+    modoOffline=false;
+    await destrancar();
+  }catch(e){
+    sessao=null; ptOcupado(false);
+    const m=String(e&&e.message||e);
+    if(/Invalid login|invalid_grant/i.test(m)) ptMsg("E-mail ou senha incorretos.");
+    else if(/Failed to fetch|NetworkError/i.test(m)) ptMsg("Não achei a internet. Se você já entrou uma vez neste computador, use o botão Trabalhar offline.");
+    else ptMsg(m);
+  }
+}
+async function entrarOffline(){
+  ptMsg("");
+  const email=$("ptEmail").value.trim().toLowerCase(), senha=$("ptSenha").value;
+  if(!email||!senha){ ptMsg("Informe o e-mail e a senha."); return; }
+  if(!temCripto){ ptMsg("Este navegador não consegue conferir a senha sem internet. Abra a ferramenta pelo endereço da Labor Rural na internet (https) — de lá o modo offline funciona."); return; }
+  if(!lerContas()[email]){
+    ptMsg("Esta conta ainda não entrou neste computador. O primeiro acesso precisa de internet: use o botão Entrar."); return;
+  }
+  ptOcupado(true,"Conferindo a senha…");
+  const ok=await prepararConta(email,senha,null,null,true);
+  if(!ok){ ptOcupado(false); ptMsg("Senha incorreta para esta conta neste computador."); return; }
+  modoOffline=true; sessao=null; fazendaNuvem=null; sujo=false;
+  ptOcupado(true,"Abrindo seus dados…");
+  await destrancar();
+}
+async function destrancar(){
+  try{ await abrirCofre(); }
+  catch(e){
+    ptOcupado(false);
+    ptMsg("Não consegui abrir os dados guardados neste computador. Se isso persistir, avise a Labor Rural antes de lançar qualquer coisa — há uma chave de recuperação.");
+    chaveCofre=null; kekViva=null; senhaViva=""; return;
+  }
+  document.body.classList.remove("trancado");
+  $("ptSenha").value="";
+  ptOcupado(false);
+  iniciarApp();
+}
+function trancar(apagarSessaoNuvem){
+  clearTimeout(tmrCofre);
+  gravarCofre().catch(()=>{}).then(()=>{
+    chaveCofre=null; chavesCofre=null; kekViva=null; senhaViva="";
+    dados=VAZIO(); safraSel=null;
+    if(apagarSessaoNuvem){ sessao=null; fazendaNuvem=null; sujo=false;
+      localStorage.removeItem(CHAVE_SESSAO); localStorage.removeItem(CHAVE_FAZ); }
+    document.body.classList.add("trancado");
+    $("ptEmail").value=contaViva; $("ptSenha").value=""; $("ptSenha").focus();
+    ptMsg(apagarSessaoNuvem?"Você saiu. Os dados continuam guardados neste computador, fechados com a sua senha.":
+      "Trancado. Digite a senha para voltar.","info");
+  });
+}
+function esquecerConta(){
+  const email=($("ptEmail").value.trim()||contaViva).toLowerCase();
+  if(!email){ ptMsg("Escreva o e-mail da conta que você quer remover."); return; }
+  const contas=lerContas();
+  if(!contas[email]){ ptMsg("Não há nada guardado para "+email+" neste computador."); return; }
+  if(!confirm("Remover a conta "+email+" deste computador?\n\nOs lançamentos guardados aqui também serão apagados. "+
+    "Só faça isso se eles já estiverem na nuvem ou num arquivo de trabalho.")) return;
+  delete contas[email]; gravarContas(contas);
+  try{ localStorage.removeItem(CHAVE_COFRE); localStorage.removeItem(CHAVE); }catch(e){}
+  ptMsg("Conta removida. Para voltar a usar, entre com internet.","info");
+}
+
+/* --- arquivo de trabalho --- */
+async function salvarArquivoTrabalho(){
+  if(!chaveCofre){ aviso("Entre na ferramenta antes de salvar."); return; }
+  const el=$("arqRelato"); if(el) el.innerHTML='<div class="empty">Fechando o arquivo…</div>';
+  try{
+    const dek=await crypto.subtle.generateKey({name:"AES-GCM",length:256},true,["encrypt","decrypt"]);
+    const c=await cifrar(dek,JSON.stringify(dados));
+    const chaves=await embrulhar(dek,kekViva,saltConta);
+    const f=dados.fazenda;
+    const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
+      meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.2.0",
+        talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
+      chaves,iv:c.iv,dados:c.dado};
+    baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
+    if(el) el.innerHTML='<div class="note info"><b>Arquivo salvo</b>Guarde no pendrive ou na pasta de downloads. '+
+      'Ele abre com a sua senha — e a Labor Rural consegue abrir se você perder a senha.</div>';
+    aviso("Arquivo de trabalho salvo.");
+  }catch(e){
+    if(el) el.innerHTML='<div class="note"><b>Não deu certo</b>'+esc(e.message||e)+'</div>';
+  }
+}
+let pacotePendente=null;
+function pedirSenhaArquivo(pac){
+  pacotePendente=pac; const m=pac.meta||{};
+  $("arqRelato").innerHTML=
+    '<div class="note info" style="margin-bottom:12px"><b>Arquivo de '+esc(m.fazenda||"propriedade sem nome")+'</b>'+
+      'Produtor: '+esc(m.produtor||"—")+' · Consultor: '+esc(m.consultor||"—")+'<br>'+
+      'Salvo em '+esc((m.salvoEm||"").slice(0,10).split("-").reverse().join("/"))+
+      ' por '+esc(m.conta||"—")+' · '+(m.custos||0)+' desembolsos, '+(m.vendas||0)+' colheitas</div>'+
+    '<div class="pgrid c2"><div class="pfield"><div class="pl">Senha do arquivo <span class="edit">EDITÁVEL</span></div>'+
+      '<input type="password" id="arqSenha" placeholder="sua senha"></div></div>'+
+    '<div class="act-row"><button class="btn" id="btnAbrirArq" type="button">Abrir e substituir os dados atuais</button>'+
+    '<button class="btn ghost" id="btnCancelaArq" type="button">Cancelar</button></div>';
+  $("arqSenha").focus();
+  $("btnAbrirArq").onclick=abrirArquivoTrabalho;
+  $("btnCancelaArq").onclick=()=>{ pacotePendente=null; $("arqRelato").innerHTML=""; };
+  $("arqSenha").addEventListener("keydown",e=>{ if(e.key==="Enter"){e.preventDefault();abrirArquivoTrabalho();} });
+}
+async function abrirArquivoTrabalho(){
+  const pac=pacotePendente; if(!pac) return;
+  const senha=$("arqSenha").value; if(!senha) return;
+  $("arqRelato").innerHTML='<div class="empty">Abrindo…</div>';
+  try{
+    const dek=await desembrulharComSenha(pac.chaves,senha);
+    if(!dek) throw new Error("SENHA");
+    const txt=await decifrar(dek,pac.iv,pac.dados);
+    const d=JSON.parse(txt);
+    if(!Array.isArray(d.custos)||!Array.isArray(d.vendas)) throw new Error("CONTEUDO");
+    dados=Object.assign(VAZIO(),d); safraSel=null; pacotePendente=null;
+    gravar(); carregarFazenda(); render(); notaImpSafra();
+    $("arqRelato").innerHTML='<div class="note info"><b>Arquivo carregado</b>'+
+      'Confira os números e depois vá ao bloco 09 para enviar à nuvem.</div>';
+    aviso("Arquivo de trabalho carregado.");
+  }catch(e){
+    const m=String(e&&e.message||e);
+    pedirSenhaArquivo(pac);
+    $("arqRelato").insertAdjacentHTML("beforeend",
+      '<div class="note" style="margin-top:12px"><b>Não deu certo</b>'+
+      (m==="SENHA"?"Senha incorreta para este arquivo.":"O conteúdo do arquivo não é válido.")+'</div>');
+  }
+}
+function escolherArquivoTrabalho(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const l=new FileReader();
+  l.onload=e=>{
+    try{
+      const j=JSON.parse(e.target.result);
+      if(j&&j.app==="LR_GESTAO_CUSTOS"&&j.chaves){ pedirSenhaArquivo(j); }
+      else if(j&&Array.isArray(j.custos)&&Array.isArray(j.vendas)){
+        dados=Object.assign(VAZIO(),j); safraSel=null;
+        gravar(); carregarFazenda(); render(); notaImpSafra();
+        $("arqRelato").innerHTML='<div class="note info"><b>Cópia aberta carregada</b>Este arquivo não tinha senha.</div>';
+        aviso("Dados da propriedade carregados.");
+      } else throw 0;
+    }catch(x){ $("arqRelato").innerHTML='<div class="note"><b>Não deu certo</b>Este arquivo não é da ferramenta.</div>'; }
+    ev.target.value="";
+  };
+  l.readAsText(f);
+}
+
+/* --- faixa de situação --- */
+function atualizarFaixa(){
+  const u=$("fxUser"); if(!u) return;
+  u.textContent=contaViva||"—";
+  $("fxPapel").textContent = papelViva==="admin" ? "Administrador" : "Consultor";
+  const on=navigator.onLine, dot=$("fxDot");
+  $("fxRede").textContent = !on ? "Sem internet" : (sessao ? "Nuvem conectada" : "Offline (não conectado)");
+  dot.className="fdot"+(!on||!sessao?" off":"");
+  let pend="Tudo salvo";
+  if(sessao&&fazendaNuvem){ pend = salvando ? "Enviando…" : (sujo ? "Alterações não enviadas" : "Tudo enviado"); }
+  else if(sessao&&!fazendaNuvem) pend="Nenhuma fazenda na nuvem";
+  else pend="Guardado só neste computador";
+  $("fxPend").textContent=pend;
+  if(/não enviadas|só neste/.test(pend)) dot.classList.add("pend");
+}
 
 function preencherSelect(el,itens,vazio){
   const atual=el.value;
@@ -3781,6 +4202,7 @@ function marcarSujo(){
   tmrSync=setTimeout(()=>{ if(sujo&&!salvando) salvarNuvem(true); },8000);
 }
 function pintarNuvem(){
+  if(typeof atualizarFaixa==="function") atualizarFaixa();
   const st=$("nvStatus"); if(!st) return;
   if(!sessao){ st.textContent="Desconectado"; return; }
   if(!navigator.onLine){ st.textContent="Sem internet — será enviado depois"; return; }
@@ -3793,41 +4215,50 @@ function erroNuvem(el,msg){
 }
 
 /* ---------------------------------------------------------------- sessão */
-async function entrarNuvem(){
+function pintarOffline(){
+  const u=$("nvOffUser"); if(!u) return;
+  u.textContent=contaViva||"—";
+  $("nvOffQtd").textContent=(dados.custos.length+dados.vendas.length)+" lançamentos";
+  $("nvSituacao").textContent = navigator.onLine ? "Disponível" : "Sem internet no momento";
+  const b=$("btnConectar"); if(b) b.disabled=!navigator.onLine;
+}
+async function conectarNuvem(){
   erroNuvem("nvErro","");
   if(!nuvemConfigurada()){
-    erroNuvem("nvErro","A URL e a chave do Supabase ainda não foram preenchidas no topo do arquivo.");
-    return;
-  }
-  const email=$("nvEmail").value.trim(), senha=$("nvSenha").value;
-  if(!email||!senha){ erroNuvem("nvErro","Informe e-mail e senha."); return; }
-  $("nvSituacao").textContent="Entrando…";
+    erroNuvem("nvErro","A URL e a chave do Supabase ainda não foram preenchidas no topo do arquivo."); return; }
+  if(!navigator.onLine){ erroNuvem("nvErro","Sem internet agora. Tente de novo quando o sinal voltar."); return; }
+  if(!senhaViva){ erroNuvem("nvErro","Tranque e entre de novo para conectar à nuvem."); return; }
+  $("nvSituacao").textContent="Conectando…";
   try{
-    const j=await autApi("token?grant_type=password",{email,password:senha});
+    const j=await autApi("token?grant_type=password",{email:contaViva,password:senhaViva});
     sessao={access_token:j.access_token,refresh_token:j.refresh_token,
       user:{id:j.user.id,email:j.user.email}};
     localStorage.setItem(CHAVE_SESSAO,JSON.stringify(sessao));
-    $("nvSenha").value="";
+    modoOffline=false;
     await depoisDeEntrar();
+    aviso("Conectado à nuvem.");
   }catch(e){
-    $("nvSituacao").textContent="Desconectado";
-    erroNuvem("nvErro", /Invalid login/i.test(e.message) ? "E-mail ou senha incorretos." : e.message);
+    sessao=null; pintarOffline();
+    erroNuvem("nvErro", /Invalid login/i.test(e.message)
+      ? "A senha deste computador não confere mais com a da Labor Rural. Tranque e entre de novo com internet."
+      : e.message);
   }
 }
 function sairNuvem(){
   sessao=null; fazendaNuvem=null; sujo=false;
   localStorage.removeItem(CHAVE_SESSAO); localStorage.removeItem(CHAVE_FAZ);
   $("nvLoginCard").style.display=""; $("nvArea").style.display="none";
-  $("nvSituacao").textContent="Desconectado";
   $("nvSub").textContent="Trabalhe offline e envie quando quiser";
-  aviso("Você saiu da nuvem. Os dados continuam neste navegador.");
+  modoOffline=true; pintarOffline(); atualizarFaixa();
+  aviso("Desconectado da nuvem. Os dados continuam guardados neste computador.");
 }
 async function depoisDeEntrar(){
   $("nvLoginCard").style.display="none"; $("nvArea").style.display="";
   $("nvUser").textContent=sessao.user.email;
   try{
     const p=await api("perfis?select=nome,papel&id=eq."+sessao.user.id);
-    if(p&&p.length) perfil=p[0];
+    if(p&&p.length){ perfil=p[0]; papelViva=perfil.papel||"consultor"; nomeViva=perfil.nome||"";
+      const cs=lerContas(); if(cs[contaViva]){ cs[contaViva].papel=papelViva; cs[contaViva].nome=nomeViva; gravarContas(cs); } }
   }catch(e){}
   $("nvPapel").textContent = perfil.papel==="admin" ? "Administrador (vê todas)" : "Consultor";
   $("nvSub").textContent="Conectado como "+sessao.user.email;
@@ -3954,43 +4385,92 @@ async function apagarNuvem(id){
 }
 
 /* ---------------------------------------------------------------- partida */
-$("btnEntrar").onclick=entrarNuvem;
 $("btnSair").onclick=sairNuvem;
+$("btnConectar").onclick=conectarNuvem;
 $("btnSalvarNuvem").onclick=()=>salvarNuvem(false);
 $("btnNovaFazenda").onclick=novaFazendaNuvem;
 $("btnAtualizarLista").onclick=listarNuvem;
-["nvEmail","nvSenha"].forEach(id=>$(id).addEventListener("keydown",e=>{
-  if(e.key==="Enter"){ e.preventDefault(); entrarNuvem(); }
-}));
-window.addEventListener("online",()=>{ pintarNuvem(); if(sujo) salvarNuvem(true); });
-window.addEventListener("offline",pintarNuvem);
-window.addEventListener("beforeunload",e=>{ if(sujo){ e.preventDefault(); e.returnValue=""; } });
+$("btnSalvarArq").onclick=salvarArquivoTrabalho;
+$("fArqTrab").onchange=escolherArquivoTrabalho;
 
+/* portão */
+$("ptLogo").src=document.querySelector("header.top .logos img").src;
+$("ptEntrar").onclick=entrarOnline;
+$("ptOffline").onclick=entrarOffline;
+$("ptEsquecer").onclick=esquecerConta;
+["ptEmail","ptSenha"].forEach(id=>$(id).addEventListener("keydown",e=>{
+  if(e.key==="Enter"){ e.preventDefault(); entrarOnline(); }
+}));
+
+/* faixa */
+$("fxTrancar").onclick=()=>trancar(false);
+$("fxSair").onclick=()=>trancar(true);
+$("fxSalvarArq").onclick=salvarArquivoTrabalho;
+
+window.addEventListener("online",()=>{ pintarNuvem(); pintarOffline();
+  if(sujo&&sessao) salvarNuvem(true); });
+window.addEventListener("offline",()=>{ pintarNuvem(); pintarOffline(); });
+window.addEventListener("beforeunload",e=>{
+  if(chaveCofre){ clearTimeout(tmrCofre); gravarCofre(); }
+  if(sujo){ e.preventDefault(); e.returnValue=""; }
+});
+
+let appIniciado=false;
+function medirFaixa(){
+  const f=$("faixa"); if(!f) return;
+  document.documentElement.style.setProperty("--fx-h",(f.offsetHeight||0)+"px");
+}
+window.addEventListener("resize",medirFaixa);
+
+function iniciarApp(){
+  atualizarFaixa(); setTimeout(medirFaixa,0);
+  carregarFazenda(); render(); notaImpSafra(); pintarOffline();
+  if(!appIniciado){
+    appIniciado=true;
+    document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>abrirAba(b.getAttribute("data-tab")));
+    if(!temDisco){
+      const d=document.createElement("div");
+      d.className="note"; d.style.margin="0 0 18px";
+      d.innerHTML="<b>Este navegador não está guardando os lançamentos</b>"+
+        "Você pode usar normalmente agora, mas ao fechar a página tudo se perde. Isso acontece na aba "+
+        "anônima ou quando o arquivo é aberto dentro de uma pré-visualização. Salve o arquivo de "+
+        "trabalho antes de fechar.";
+      const w=document.querySelector(".wrap");
+      w.insertBefore(d,w.firstChild);
+    }
+  }
+  const ini=(location.hash||"").replace("#","");
+  abrirAba(["b1","b2","b3","b4","b5","b6","b7","b8","b9"].includes(ini)?ini:"b1");
+  if(!modoOffline&&sessao) depoisDeEntrar().catch(()=>{});
+  else { $("nvLoginCard").style.display=""; $("nvArea").style.display="none"; }
+}
+
+/* Service worker: faz o endereço da Vercel abrir sem internet.
+   Se o arquivo sw.js não tiver sido enviado ao GitHub, isto não faz nada. */
+if("serviceWorker" in navigator && location.protocol.indexOf("http")===0){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
+/* estado inicial do portão */
 (function(){
-  if(!nuvemConfigurada()){
-    $("nvSituacao").textContent="Nuvem não configurada";
-    erroNuvem("nvErro","Abra o arquivo em um editor de texto e preencha SUPABASE_URL e SUPABASE_ANON_KEY no topo do script.");
-    return;
+  if(!temCripto){
+    ptMsg("Esta ferramenta foi aberta de um jeito que não permite proteger os dados nem conferir a "+
+      "senha sem internet. Use sempre o endereço da Labor Rural na internet (começa com https). "+
+      "Entrar com internet ainda funciona por aqui.","info");
+  }
+  const contas=lerContas();
+  const nomes=Object.keys(contas);
+  if(nomes.length){
+    nomes.sort((a,b)=>String(contas[b].ultimo||"").localeCompare(String(contas[a].ultimo||"")));
+    $("ptEmail").value=nomes[0];
+    setTimeout(()=>$("ptSenha").focus(),80);
+  } else {
+    $("ptRodape").innerHTML="Primeiro acesso neste computador: é preciso internet. Depois disso, "+
+      "o botão <b>Trabalhar offline</b> passa a funcionar aqui.";
+    setTimeout(()=>$("ptEmail").focus(),80);
   }
   try{ const s=localStorage.getItem(CHAVE_SESSAO); if(s) sessao=JSON.parse(s); }catch(e){}
-  if(sessao) depoisDeEntrar().catch(()=>{ sessao=null; localStorage.removeItem(CHAVE_SESSAO); });
 })();
-document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>abrirAba(b.getAttribute("data-tab")));
-
-ler(); carregarFazenda(); render(); notaImpSafra();
-const ini=(location.hash||"").replace("#","");
-abrirAba(["b1","b2","b3","b4","b5","b6","b7","b8","b9"].includes(ini)?ini:"b1");
-
-if(!temDisco){
-  const d=document.createElement("div");
-  d.className="note"; d.style.margin="0 0 18px";
-  d.innerHTML="<b>Este navegador não está guardando os lançamentos</b>"+
-    "Você pode usar normalmente agora, mas ao fechar a página tudo se perde. Isso acontece na aba "+
-    "anônima ou quando o arquivo é aberto dentro de uma pré-visualização. Baixe o arquivo e abra "+
-    "direto no navegador para guardar de verdade.";
-  const w=document.querySelector(".wrap");
-  w.insertBefore(d,w.firstChild);
-}
 </script>
 </body>
 </html>
