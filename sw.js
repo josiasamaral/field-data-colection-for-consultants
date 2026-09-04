@@ -1,6 +1,6 @@
 /* =====================================================================
    Labor Rural — Gestão de Custos de Produção
-   Service worker (v0.3.0)
+   Service worker (v0.3.1)
 
    O que este arquivo faz, em uma frase:
    guarda uma cópia da ferramenta no próprio celular, para que o endereço
@@ -15,7 +15,7 @@
    interceptados), então login e sincronização não são afetados.
    ===================================================================== */
 
-const CACHE = "lr-custos-v0-3-0";
+const CACHE = "lr-custos-v0-3-1";
 
 /* arquivos que formam a "casca" do aplicativo */
 const CASCA = [
