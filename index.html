@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- © 2026 Labor Rural — Departamento de Inteligência.
-     Ferramenta de Gestão de Custos de Produção — versão 0.3.3
+     Ferramenta de Gestão de Custos de Produção — versão 0.4.0
      Novidades desta versão:
        · a fazenda passa a conter SAFRAS; cada safra tem os seus talhões, o seu
          inventário e os seus parâmetros econômicos;
@@ -375,6 +375,43 @@ body.trancado #sumario{display:none!important}
   #sumario .sacoes{grid-template-columns:1fr}
   #sumario .sfaz .sf-b{width:100%}
 }
+
+/* ============== SUMARIO COM TRES MENUS (v0.4.0) ============== */
+#sumario .menus{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:6px 0 4px}
+#sumario .mcard{display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;
+  background:var(--panel2);border:1.5px solid var(--line);border-radius:var(--rad);
+  padding:16px 15px;cursor:pointer;font-family:var(--font-b);
+  transition:border-color .15s,background .15s,transform .12s}
+#sumario .mcard:hover{border-color:var(--brand-2);background:#fff;transform:translateY(-1px)}
+#sumario .mcard.sel{border-color:var(--brand-2);background:#fff;
+  box-shadow:0 0 0 3px rgba(18,147,137,.13)}
+#sumario .mcard:disabled{opacity:.45;cursor:not-allowed;transform:none}
+#sumario .mcard svg{width:34px;height:34px;flex:0 0 auto}
+#sumario .mcard b{font-size:14.5px;color:var(--brand-deep);font-weight:600;line-height:1.25}
+#sumario .mcard span{font-size:11.5px;color:var(--muted);line-height:1.45}
+@media(max-width:640px){#sumario .menus{grid-template-columns:1fr}
+  #sumario .mcard{flex-direction:row;align-items:center;padding:12px 13px}
+  #sumario .mcard svg{width:28px;height:28px}}
+.painel-sm{display:none}
+.painel-sm.on{display:block}
+.emb{background:var(--panel2);border:1.5px dashed var(--line);border-radius:var(--rad);
+  padding:22px 18px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.emb b{display:block;color:var(--brand-deep);font-size:14.5px;margin-bottom:5px}
+.ulin{display:flex;align-items:center;gap:11px;flex-wrap:wrap;border:1.5px solid var(--line);
+  border-radius:var(--rad-s);padding:10px 13px;margin-bottom:8px;background:#fff}
+.ulin .ui{flex:1 1 200px;min-width:0}
+.ulin .un{font-size:13.5px;font-weight:600;color:var(--brand-deep);overflow-wrap:anywhere}
+.ulin .ue{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.ulin select{font-family:var(--font-b);font-size:13px;font-weight:600;color:var(--input-ink);
+  border:1.5px solid var(--line);border-radius:7px;background:#fff;padding:6px 9px}
+.pap{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  border-radius:6px;padding:2px 8px;white-space:nowrap}
+.pap.admin{background:var(--brand-deep);color:#fff}
+.pap.analista{background:var(--brand-3);color:#fff}
+.pap.tester{background:var(--gold);color:#fff}
+.pap.consultor{background:var(--okbg);color:var(--ok);border:1px solid var(--okline)}
+.pap.produtor{background:var(--warnbg);color:var(--warn);border:1px solid var(--warnline)}
+.pap.cliente{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
 
 /* ===================== PERGUNTA DE DUAS SAIDAS ===================== */
 .dlg{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -775,6 +812,38 @@ body.trancado #sumario{display:none!important}
       </div>
     </div>
 
+    <div class="menus">
+      <button class="mcard" id="mnFaz" type="button">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M3 14 16 5l13 9" stroke="var(--brand-deep)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 13v13h20V13" stroke="var(--brand-2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M13 26v-7h6v7" stroke="var(--brand-3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <b>Fazendas atendidas</b>
+        <span>Abrir, cadastrar e escolher a safra de cada propriedade.</span>
+      </button>
+      <button class="mcard" id="mnPain" type="button">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M4 27h24" stroke="var(--brand-deep)" stroke-width="2.2" stroke-linecap="round"/>
+          <rect x="6" y="16" width="5" height="9" rx="1.4" fill="var(--brand-2)"/>
+          <rect x="14" y="10" width="5" height="15" rx="1.4" fill="var(--brand-3)"/>
+          <rect x="22" y="5" width="5" height="20" rx="1.4" fill="var(--brand-deep)"/>
+        </svg>
+        <b>Painel de resultados</b>
+        <span>Indicadores por talhão, com filtros de estado, consultor, sistema e material.</span>
+      </button>
+      <button class="mcard" id="mnConf" type="button">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="4.4" stroke="var(--brand-deep)" stroke-width="2.2"/>
+          <path d="M16 3.6v4M16 24.4v4M28.4 16h-4M7.6 16h-4M24.8 7.2l-2.8 2.8M10 22l-2.8 2.8M24.8 24.8 22 22M10 10 7.2 7.2"
+                stroke="var(--brand-2)" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <b>Configurações</b>
+        <span>Usuários, papéis de acesso e preferências da equipe.</span>
+      </button>
+    </div>
+
+    <div class="painel-sm on" id="pnFaz">
     <div class="sacoes">
       <button class="scard destaque" id="smNova" type="button">
         <b>+ Cadastrar nova fazenda</b>
@@ -794,6 +863,40 @@ body.trancado #sumario{display:none!important}
     </div>
     <div id="smLista"></div>
     <div id="smErro"></div>
+    </div>
+
+    <div class="painel-sm" id="pnPain">
+      <div class="stit"><h3>Painel de resultados</h3></div>
+      <div class="emb"><b>Chega na próxima entrega</b>
+        Os indicadores por talhão, com os filtros de estado, consultor, sistema produtivo e
+        material genético, vêm na v0.4.1. Os papéis de acesso que mandam nesse painel já
+        estão valendo a partir desta versão.</div>
+    </div>
+
+    <div class="painel-sm" id="pnConf">
+      <div class="stit"><h3>Novo usuário</h3><span class="sesp"></span></div>
+      <div id="confBloq" class="emb" style="display:none"><b>Só o administrador cria usuários</b>
+        Peça a quem administra o sistema.</div>
+      <div id="confForm">
+        <div class="pgrid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+          <div class="pfield"><div class="pl">Nome</div><input type="text" id="cfNome" placeholder="Nome de quem vai usar"></div>
+          <div class="pfield"><div class="pl">E-mail</div><input type="email" id="cfEmail" placeholder="pessoa@laborrural.com"></div>
+          <div class="pfield"><div class="pl">Senha provisória</div><input type="text" id="cfSenha" placeholder="mínimo 8 caracteres"></div>
+          <div class="pfield"><div class="pl">Papel</div><select id="cfPapel"></select></div>
+        </div>
+        <div class="pb" id="cfExplica" style="font-size:11.5px;color:var(--muted);margin:8px 2px 0">&mdash;</div>
+        <div class="act-row" style="margin-top:10px">
+          <button class="btn" id="cfCriar" type="button">Criar usuário</button>
+          <button class="btn ghost" id="cfSorteia" type="button">Sortear senha</button>
+        </div>
+        <div id="cfErro"></div>
+      </div>
+
+      <div class="stit"><h3>Usuários</h3><span class="h3n" id="cfQtd">&mdash;</span>
+        <span class="sesp"></span>
+        <button class="btn ghost" id="cfAtualizar" type="button">Atualizar</button></div>
+      <div id="cfLista"></div>
+    </div>
 
     <div class="spe">
       <span class="sesp"></span>
@@ -860,6 +963,9 @@ body.trancado #sumario{display:none!important}
         <input type="text" id="fNome" placeholder="Fazenda Boa Esperança"></div>
       <div class="pfield"><div class="pl">Produtor(a) <span class="edit">EDITÁVEL</span></div>
         <input type="text" id="fProdutor" placeholder="Nome do produtor"></div>
+      <div class="pfield"><div class="pl">E-mail do produtor <span class="opt">OPCIONAL</span></div>
+        <input type="email" id="fEmailProd" placeholder="produtor@email.com">
+        <div class="pb">Com este e-mail o produtor entra e vê a própria fazenda, sem poder editar.</div></div>
       <div class="pfield"><div class="pl">Consultor(a) <span class="edit">EDITÁVEL</span></div>
         <input type="text" id="fConsultor" placeholder="Quem atende a fazenda">
         <div class="pb">Vai para o nome dos arquivos exportados e para a base ROTA.</div></div>
@@ -1639,7 +1745,7 @@ body.trancado #sumario{display:none!important}
   <b>Fonte:</b> Departamento de Inteligência da Labor Rural, 2026.
   <span>Material didático componente do treinamento de Gestão de Propriedades Cacaueiras da ExpoCacau 2026.</span>
   <span><b>Ferramenta em desenvolvimento.</b></span>
-  <span style="margin-left:auto"><b>Versão:</b> 0.3.3</span>
+  <span style="margin-left:auto"><b>Versão:</b> 0.4.0</span>
 </footer>
 </div>
 </div></div>
@@ -2161,7 +2267,7 @@ const safraFechada = () => SA().situacao==="fechada";
 
 function VAZIO(){
   const o={ safras:{}, custos:[], vendas:[], financeiro:{} };
-  const f={nome:"",produtor:"",consultor:"",cidade:"",uf:"BA",unid:"KG"};
+  const f={nome:"",produtor:"",consultor:"",cidade:"",uf:"BA",unid:"KG",emailProdutor:""};
   Object.defineProperty(o,"__fazenda",{value:f,enumerable:false,writable:true});
   /* os parâmetros econômicos vivem na safra, mas continuam acessíveis
      como dados.fazenda.terraNua para não quebrar os blocos existentes */
@@ -2181,7 +2287,8 @@ function normalizarDados(j){
   if(!j||typeof j!=="object") return o;
   const fz=j.fazenda||{};
   Object.assign(o.__fazenda,{nome:fz.nome||"",produtor:fz.produtor||"",
-    consultor:fz.consultor||"",cidade:fz.cidade||"",uf:fz.uf||"BA",unid:fz.unid||"KG"});
+    consultor:fz.consultor||"",cidade:fz.cidade||"",uf:fz.uf||"BA",unid:fz.unid||"KG",
+    emailProdutor:fz.emailProdutor||""});
   o.custos=Array.isArray(j.custos)?j.custos:[];
   o.vendas=Array.isArray(j.vendas)?j.vendas:[];
   o.financeiro=j.financeiro||{};
@@ -2459,7 +2566,7 @@ async function salvarArquivoTrabalho(){
     const f=dados.fazenda;
     const pac={app:"LR_GESTAO_CUSTOS",v:1,cifra:"AES-GCM-256",kdf:"PBKDF2-SHA256",iter:ITER,
       meta:{fazenda:f.nome||"",produtor:f.produtor||"",consultor:f.consultor||"",
-        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.3.3",
+        conta:contaViva,salvoEm:new Date().toISOString(),versaoApp:"0.4.0",
         talhoes:dados.talhoes.length,custos:dados.custos.length,vendas:dados.vendas.length},
       chaves,iv:c.iv,dados:c.dado};
     baixar(nomeArquivo("TRABALHO","lrz"),JSON.stringify(pac),"application/octet-stream");
@@ -2533,7 +2640,7 @@ function escolherArquivoTrabalho(ev){
 function atualizarFaixa(){
   const u=$("fxUser"); if(!u) return;
   u.textContent=contaViva||"—";
-  $("fxPapel").textContent = papelViva==="admin" ? "Administrador" : "Consultor";
+  $("fxPapel").textContent = rotPapel(papelViva);
   const on=navigator.onLine, dot=$("fxDot");
   $("fxRede").textContent = !on ? "Sem internet" : (sessao ? "Nuvem conectada" : "Offline (não conectado)");
   dot.className="fdot"+(!on||!sessao?" off":"");
@@ -2659,7 +2766,7 @@ function pintarDerivados(){
 function carregarFazenda(){
   const f=dados.fazenda;
   $("fNome").value=f.nome||""; $("fProdutor").value=f.produtor||"";
-  $("fConsultor").value=f.consultor||"";
+  $("fConsultor").value=f.consultor||""; $("fEmailProd").value=f.emailProdutor||"";
   $("fUF").value=f.uf||"BA"; $("fUnid").value=f.unid||"KG";
   $("fTerraNua").value=f.terraNua||""; $("fMdofMes").value=f.mdofMes||"";
   $("fTma").value=f.tma!=null?f.tma:6;
@@ -2673,6 +2780,7 @@ function salvarFazenda(){
   /* Object.assign para nao perder campos que nao estao neste formulario */
   Object.assign(dados.fazenda,{nome:$("fNome").value.trim(),produtor:$("fProdutor").value.trim(),
     consultor:$("fConsultor").value.trim(),
+    emailProdutor:$("fEmailProd").value.trim().toLowerCase(),
     uf:$("fUF").value||"BA", unid:$("fUnid").value||"KG",
     terraNua:num($("fTerraNua").value), mdofMes:num($("fMdofMes").value),
     tma:num($("fTma").value)||6});
@@ -5094,7 +5202,8 @@ $("fUF").addEventListener("change",()=>{notaUF();notaImpSafra();});
 $("cData").addEventListener("change",notaUF);
 $("vData").addEventListener("change",notaUF);
 /* identificacao grava sozinha: sem isso o texto digitado some quando a tela e redesenhada */
-[["fNome","nome"],["fProdutor","produtor"],["fConsultor","consultor"]].forEach(([id,k])=>{
+[["fNome","nome"],["fProdutor","produtor"],["fConsultor","consultor"],
+ ["fEmailProd","emailProdutor"]].forEach(([id,k])=>{
   $(id).addEventListener("input",()=>{ dados.fazenda[k]=$(id).value.trim(); gravar(); });
 });
 /* cada estado tem a unidade com que o produtor conversa no dia a dia.
@@ -5306,6 +5415,7 @@ function fazendaPra(){
   const f=dados.fazenda;
   return {nome:f.nome||"Sem nome",produtor:f.produtor||null,consultor:f.consultor||null,
     cidade:f.cidade||null,uf:f.uf||"BA",unid:f.unid||"KG",
+    email_produtor:f.emailProdutor||null,
     atualizado_em:new Date().toISOString()};
 }
 function safraPra(rot){
@@ -5386,7 +5496,7 @@ async function depoisDeEntrar(){
     if(p&&p.length){ perfil=p[0]; papelViva=perfil.papel||"consultor"; nomeViva=perfil.nome||"";
       const cs=lerContas(); if(cs[contaViva]){ cs[contaViva].papel=papelViva; cs[contaViva].nome=nomeViva; gravarContas(cs); } }
   }catch(e){}
-  $("nvPapel").textContent = perfil.papel==="admin" ? "Administrador (vê todas)" : "Consultor";
+  $("nvPapel").textContent = rotPapel(perfil.papel);
   $("nvSub").textContent="Conectado como "+sessao.user.email;
   try{ const g=localStorage.getItem(CHAVE_FAZ); if(g) fazendaNuvem=JSON.parse(g); }catch(e){}
   pintarNuvem();
@@ -5551,7 +5661,8 @@ async function abrirNuvem(id,rotuloAlvo){
     if(!f) throw new Error("Fazenda não encontrada.");
     const novo=VAZIO();
     Object.assign(novo.__fazenda,{nome:f.nome||"",produtor:f.produtor||"",
-      consultor:f.consultor||"",cidade:f.cidade||"",uf:f.uf||"BA",unid:f.unid||"KG"});
+      consultor:f.consultor||"",cidade:f.cidade||"",uf:f.uf||"BA",unid:f.unid||"KG",
+      emailProdutor:f.email_produtor||""});
 
     const ss=await api("safras?select=*&fazenda_id=eq."+id+"&order=inicio.asc");
     if(!ss || !ss.length){
@@ -5684,7 +5795,7 @@ async function fecharSafra(rot){
   try{
     await salvarNuvem(true);
     await api("retratos",{method:"POST",headers:{Prefer:"resolution=merge-duplicates"},
-      body:[{safra_id:s.id,versao_app:"0.3.3",gerado_por:sessao?sessao.user.id:null,
+      body:[{safra_id:s.id,versao_app:"0.4.0",gerado_por:sessao?sessao.user.id:null,
              conteudo:JSON.parse(JSON.stringify(calcular(rot)))}]}).catch(()=>{});
     await api("safras?id=eq."+s.id,{method:"PATCH",body:{situacao:"fechada"}});
     s.situacao="fechada";
@@ -5742,10 +5853,13 @@ function pintarSumario(){
   const lg=$("smLogo");
   if(lg && !lg.src){ const o=document.querySelector("header.top .logos img"); if(o) lg.src=o.src; }
   const quem  = nomeViva || contaViva || "—";
-  const papel = papelViva==="admin" ? "Administrador — vê todas as fazendas" : "Consultor";
   const rede  = !navigator.onLine ? "sem internet"
               : (sessao ? "nuvem conectada" : "offline, não conectado");
-  $("smSub").textContent = quem+"  ·  "+papel+"  ·  "+rede;
+  $("smSub").textContent = quem+"  ·  "+rotPapel(papelViva)+"  ·  "+rede;
+  /* cliente não abre fazenda; produtor abre, mas só para ler */
+  $("mnFaz").disabled = papelViva==="cliente";
+  if(papelViva==="cliente" && menuSm==="faz") abrirMenu("pain");
+  $("smNova").style.display = podeEditarFazendas() ? "" : "none";
   const cont=temConteudo();
   $("smAtual").disabled=!cont;
   $("smAtualTxt").textContent = cont
@@ -5892,7 +6006,7 @@ async function perguntarNovaSafra(){
 
 /* safra fechada: a tela também trava, além do banco */
 function pintarTravaSafra(){
-  const fech=safraFechada();
+  const fech=safraFechada() || soLeitura();
   ["btnAddItem","btnSalvarCusto","btnSalvarVenda","btnAddTalhao","btnSalvarFaz"]
     .forEach(id=>{ const b=$(id); if(b) b.disabled=fech; });
   document.querySelectorAll("#avisoTrava").forEach(e=>e.remove());
@@ -5901,14 +6015,134 @@ function pintarTravaSafra(){
       const sec=$(bid); if(!sec) return;
       const d=document.createElement("div");
       d.id="avisoTrava"; d.className="trava";
-      d.textContent="Safra "+safraSel+" está FECHADA. Os lançamentos não podem ser alterados."+
-        (papelViva==="admin"?" Você pode reabrir pelo botão Safras.":" Peça ao administrador para reabrir.");
+      d.textContent = soLeitura()
+        ? ("Acesso de "+rotPapel(papelViva)+": você pode consultar os dados, mas não alterá-los.")
+        : ("Safra "+safraSel+" está FECHADA. Os lançamentos não podem ser alterados."+
+           (papelViva==="admin"?" Você pode reabrir pelo botão Safras.":" Peça ao administrador para reabrir."));
       sec.insertBefore(d,sec.firstChild);
     });
   }
 }
 
+/* ==========================================================================
+   PAPEIS DE ACESSO (v0.4.0)
+   ========================================================================== */
+const PAPEIS={
+  admin:    {rot:"Administrador", exp:"Vê e edita tudo. Único que cria usuários e reabre safra fechada."},
+  analista: {rot:"Analista de dados", exp:"Vê e edita todas as fazendas. Para consistência e ajuste de dados."},
+  tester:   {rot:"Tester", exp:"Vê e edita todas as fazendas. Equipe de testes da Labor Rural."},
+  consultor:{rot:"Consultor", exp:"Vê e edita apenas as fazendas que ele cadastrou."},
+  produtor: {rot:"Produtor", exp:"Vê, sem editar, apenas as fazendas com o e-mail dele cadastrado."},
+  cliente:  {rot:"Cliente", exp:"Não vê fazenda nenhuma. Só o painel de resultados, com os nomes ocultos."}
+};
+const rotPapel = p => (PAPEIS[p]||{}).rot || "Consultor";
+const veTudo   = () => ["admin","analista","tester"].indexOf(papelViva)>=0;
+const podeEditarFazendas = () => veTudo() || papelViva==="consultor";
+const soLeitura = () => papelViva==="produtor" || papelViva==="cliente";
+
+/* menu escolhido no sumario */
+let menuSm="faz";
+function abrirMenu(qual){
+  menuSm=qual;
+  [["faz","mnFaz","pnFaz"],["pain","mnPain","pnPain"],["conf","mnConf","pnConf"]]
+    .forEach(([k,bt,pn])=>{
+      $(bt).classList.toggle("sel",k===qual);
+      $(pn).classList.toggle("on",k===qual);
+    });
+  if(qual==="conf") pintarConfig();
+  if(qual==="faz")  listarSumario();
+}
+
+/* ------------------------------------------------------- configurações */
+function pintarConfig(){
+  const adm = papelViva==="admin";
+  $("confForm").style.display = adm ? "" : "none";
+  $("confBloq").style.display = adm ? "none" : "";
+  if(!$("cfPapel").options.length){
+    $("cfPapel").innerHTML=Object.keys(PAPEIS)
+      .map(k=>'<option value="'+k+'">'+PAPEIS[k].rot+'</option>').join("");
+    $("cfPapel").value="consultor";
+  }
+  $("cfExplica").textContent=(PAPEIS[$("cfPapel").value]||{}).exp||"";
+  listarUsuarios();
+}
+function sortearSenha(){
+  const a="abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let s=""; const v=new Uint32Array(12); crypto.getRandomValues(v);
+  for(let i=0;i<12;i++) s+=a[v[i]%a.length];
+  $("cfSenha").value=s;
+}
+async function listarUsuarios(){
+  const box=$("cfLista"); if(!box) return;
+  if(!sessao){ $("cfQtd").textContent="— sem nuvem";
+    box.innerHTML='<div class="empty">Conecte-se para ver os usuários.</div>'; return; }
+  box.innerHTML='<div class="empty">Buscando…</div>';
+  try{
+    const us=await api("perfis?select=id,nome,email,papel&order=papel.asc");
+    $("cfQtd").textContent="— "+(us||[]).length+" cadastrado(s)";
+    const adm=papelViva==="admin";
+    box.innerHTML=(us||[]).map(u=>{
+      const eu = sessao && sessao.user && u.id===sessao.user.id;
+      const sel = adm && !eu
+        ? '<select data-up="'+u.id+'">'+Object.keys(PAPEIS)
+            .map(k=>'<option value="'+k+'"'+(k===u.papel?" selected":"")+'>'+PAPEIS[k].rot+'</option>').join("")+'</select>'
+        : '<span class="pap '+esc(u.papel)+'">'+esc(rotPapel(u.papel))+'</span>';
+      return '<div class="ulin"><div class="ui"><div class="un">'+esc(u.nome||"—")+
+        (eu?' <span class="sem ok">VOCÊ</span>':'')+'</div>'+
+        '<div class="ue">'+esc(u.email||"—")+'</div></div>'+sel+'</div>';
+    }).join("") || '<div class="empty">Nenhum usuário cadastrado.</div>';
+    box.querySelectorAll("[data-up]").forEach(s=>s.onchange=()=>trocarPapel(s.getAttribute("data-up"),s.value));
+  }catch(e){
+    $("cfQtd").textContent="—";
+    box.innerHTML='<div class="note"><b>Não deu para buscar</b>'+esc(e.message||e)+'</div>';
+  }
+}
+async function trocarPapel(id,papel){
+  try{
+    await api("perfis?id=eq."+id,{method:"PATCH",body:{papel}});
+    aviso("Papel alterado para "+rotPapel(papel)+".");
+    listarUsuarios();
+  }catch(e){ aviso("Não deu para alterar: "+(e.message||e)); listarUsuarios(); }
+}
+async function criarUsuario(){
+  const er=$("cfErro"); er.innerHTML="";
+  const nome=$("cfNome").value.trim(), email=$("cfEmail").value.trim().toLowerCase();
+  const senha=$("cfSenha").value, papel=$("cfPapel").value;
+  const falha=t=>{ er.innerHTML='<div class="note" style="margin-top:10px"><b>Não deu para criar</b>'+esc(t)+'</div>'; };
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ falha("Informe um e-mail válido."); $("cfEmail").focus(); return; }
+  if(senha.length<8){ falha("A senha precisa de pelo menos 8 caracteres."); $("cfSenha").focus(); return; }
+  if(!sessao){ falha("Você precisa estar conectado à nuvem."); return; }
+  $("cfCriar").disabled=true; $("cfCriar").textContent="Criando…";
+  try{
+    const r=await fetch(SUPABASE_URL+"/functions/v1/criar-usuario",{
+      method:"POST",
+      headers:{apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+sessao.access_token,
+               "Content-Type":"application/json"},
+      body:JSON.stringify({nome,email,senha,papel})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.erro||j.message||("Erro "+r.status));
+    er.innerHTML='<div class="note info" style="margin-top:10px"><b>Usuário criado</b>'+
+      esc(nome||email)+' · '+esc(rotPapel(papel))+'<br>Senha provisória: <b>'+esc(senha)+
+      '</b> — passe para a pessoa e peça que troque no primeiro acesso.</div>';
+    ["cfNome","cfEmail","cfSenha"].forEach(i=>$(i).value="");
+    listarUsuarios();
+  }catch(e){
+    const m=String(e.message||e);
+    falha(/Failed to fetch|NetworkError/i.test(m)
+      ? "A função criar-usuario não respondeu. Confira se ela foi publicada no Supabase (Edge Functions)."
+      : m);
+  }finally{ $("cfCriar").disabled=false; $("cfCriar").textContent="Criar usuário"; }
+}
+
 /* ---------------------------------------------------------------- partida */
+$("mnFaz").onclick=()=>abrirMenu("faz");
+$("mnPain").onclick=()=>abrirMenu("pain");
+$("mnConf").onclick=()=>abrirMenu("conf");
+$("cfCriar").onclick=criarUsuario;
+$("cfSorteia").onclick=sortearSenha;
+$("cfAtualizar").onclick=listarUsuarios;
+$("cfPapel").addEventListener("change",()=>{
+  $("cfExplica").textContent=(PAPEIS[$("cfPapel").value]||{}).exp||""; });
 $("fxSafras").onclick=abrirPainelSafras;
 $("pnFechar").onclick=fecharPainelSafras;
 $("pnFundo").onclick=fecharPainelSafras;
